@@ -168,12 +168,19 @@ This document describes Statistics::Sampler::Multinomial version 0.0_001
 
     use Statistics::Sampler::Multinomial;
 
-=for author to fill in:
-    Brief code example(s) here showing commonest usage(s).
-    This section will be as far as many users bother reading
-    so make it as educational and exeplary as possible.
-  
-  
+    my $object = Statistics::Sampler::Multinomial->new();
+    $object->initialise (data => [0.1, 0.3, 0.2, 0.4]);
+    $object->draw;
+    #  returns a number between 0..3
+    my $samples = $object->draw_n_samples(5)
+    #  returns an array ref that might look something like
+    #  [3,3,0,2,0]
+    
+    # to specify your own PRNG object, in this case using the Mersenne Twister
+    my $mrma = Math::Random::MT::Auto->new;
+    my $object = Statistics::Sampler::Multinomial->new(prng => $mrma);
+
+
 =head1 DESCRIPTION
 
 =for author to fill in:
@@ -189,8 +196,15 @@ This document describes Statistics::Sampler::Multinomial version 0.0_001
 
 =item my $object = Statistics::Sampler::Multinomial->new (prng => $prng)
 
-Creates a new object, optionally passing the PRNG object to be used.
-If no PRNG object is passed then it defaults to XXX.
+Creates a new object, optionally passing a PRNG object to be used.
+If no PRNG object is passed then it defaults to an internal object
+that uses the perl PRNG stream.
+
+Passing your own PRNG mean you have control over the random number
+stream used, and can use it as part of a separate analysis.
+The only requirement of such an object is that it has a rand()
+method that returns a value in the interval [0,1)
+(the same as Perl's rand() builtin).
 
 =item $object->initialise (data => [1, 4, 5])
 
