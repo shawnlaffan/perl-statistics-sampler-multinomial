@@ -54,19 +54,19 @@ sub test_croakers {
     
     $result = eval {$object->draw};
     $e = $EVAL_ERROR;
-    ok $e, 'error when draw called before setup';
+    ok $e, 'error when draw called before initialise';
 
-    $result = eval {$object->setup ({1..2})};
+    $result = eval {$object->initialise (data => {1..2})};
     $e = $EVAL_ERROR;
-    ok $e, 'error when passed a hash ref';
+    ok $e, 'error when passed a hash ref as the data arg';
     
-    $result = eval {$object->setup (1..2)};
+    $result = eval {$object->initialise (data => 1)};
     $e = $EVAL_ERROR;
-    ok $e, 'error when passed a flattened list';
+    ok $e, 'error when passed a scalar as the data arg';
     
-    $result = eval {$object->setup ([-1, 2, 4])};
+    $result = eval {$object->initialise (data => [-1, 2, 4])};
     $e = $EVAL_ERROR;
-    ok $e, 'error when passed a negative value';
+    ok $e, 'error when passed a negative value in the data';
     
 }
 
@@ -75,7 +75,7 @@ sub test_prob_generation {
     my @probs = (2, 3, 5, 10);
     
     my $object = Statistics::Sampler::Multinomial->new({prng => $prng});
-    my $result = eval {$object->setup (\@probs)};
+    my $result = eval {$object->initialise (data => \@probs)};
     my $e = $EVAL_ERROR;
     diag $e if $e;
     ok !$e, 'no eval error when expected args passed';
@@ -89,7 +89,7 @@ sub test_prob_generation {
 
     @probs = (1..9);
     $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
-    $result = eval {$object->setup (\@probs)};
+    $result = eval {$object->initialise (data => \@probs)};
 
     $expected = {
         J => [7,   8,   8,   8,   0, 0, 5,   6,   7  ],
@@ -103,7 +103,7 @@ sub test_prob_generation {
 sub test_draw {
     my $prng = Math::Random::MT::Auto->new (seed => 2345);
     my $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
-    my $result = eval {$object->setup ([1..10])};
+    my $result = eval {$object->initialise (data => [1..10])};
 
     subtest 'draw 3 vals from 1..10' => sub {
         my $val;
@@ -123,7 +123,7 @@ sub test_draw {
 sub test_draw_with_zeroes {
     my $prng = Math::Random::MT::Auto->new (seed => 2345);
     my $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
-    my $result = eval {$object->setup ([1..10,0,0])};
+    my $result = eval {$object->initialise (data => [1..10,0,0])};
 
     subtest 'draw 3 vals from 1..10,0,0' => sub {
         my $val;
@@ -167,9 +167,9 @@ sub test_draw_real_data {
     #  need to update expected results if this is removed/commented
     my @waste_three_vals = map {$prng->rand} (0..2);
     my $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
-    my $result = eval {$object->setup ($probs)};
+    my $result = eval {$object->initialise (data => $probs)};
 
-    subtest 'got expected setup from iNextPD data for J array' => sub {
+    subtest 'got expected initialisation from iNextPD data for J array' => sub {
         my $key = 'J';
         for my $i (0 .. $#$probs) {
             my $got = $result->{$key}[$i];
@@ -179,7 +179,7 @@ sub test_draw_real_data {
     };
     
     my $precision = "%.6f";  #  we get precision effects with these data
-    subtest "got expected setup from iNextPD data for q array at precision $precision" => sub {
+    subtest "got expected initialisation from iNextPD data for q array at precision $precision" => sub {
         my $key = 'q';
         for my $i (0 .. $#$probs) {
             my $got = sprintf ($precision, $result->{$key}[$i]);

@@ -209,6 +209,8 @@ such promises are made, so expect failures for lying.
 Draw one sample from the distribution.
 Returns the chosen class number.
 
+Croaks if called before initialise has been called.
+
 =item $object->draw_n_samples ($n)
 
 Returns an array of $n samples.  Each array entry
@@ -217,6 +219,8 @@ e.g. for $n=5 and the K=3 example from above,
 one could get (0,2,1,0,0).
 
 Returns an array ref in scalar context.
+
+Croaks if called before initialise has been called.
 
 =item $object->get_class_count
 
