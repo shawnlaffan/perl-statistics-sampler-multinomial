@@ -43,11 +43,6 @@ sub test_croakers {
     my $prng = Math::Random::MT::Auto->new;
     my ($result, $e, $object);
 
-    #  skip this - we have a default now
-    #my $object = eval {Statistics::Sampler::Multinomial->new};
-    #$e = $EVAL_ERROR;
-    #ok $e, 'got an error when prng arg not passed';
-
     $object = Statistics::Sampler::Multinomial->new (prng => $prng);
     $e = $EVAL_ERROR;
     ok !$e, 'no error when prng arg passed';
