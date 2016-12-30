@@ -11,7 +11,6 @@ use Ref::Util qw /is_arrayref/;
 use List::Util qw /min sum/;
 use List::MoreUtils qw /first_index/;
 use Scalar::Util qw /blessed/;
-use POSIX qw /floor/;
 
 sub new {
     my ($class, %args) = @_;
@@ -134,7 +133,7 @@ sub draw {
 
     my $J  = $self->{J};
     my $K  = scalar @$J;
-    my $kk = floor ($prng->rand * $K);
+    my $kk = int ($prng->rand * $K);
  
     # Draw from the binary mixture, either keeping the
     # small one, or choosing the associated larger one.
@@ -153,7 +152,7 @@ sub draw_n_samples {
     
     my @draws;
     foreach my $i (1..$n) {
-        my $kk = floor ($prng->rand * $K);
+        my $kk = int ($prng->rand * $K);
         # Draw from the binary mixture, either keeping the
         # small one, or choosing the associated larger one.
         push @draws, $prng->rand < $q->[$kk] ? $kk : $J->[$kk];
