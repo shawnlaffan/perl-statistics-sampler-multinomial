@@ -178,7 +178,7 @@ __END__
 
 =head1 NAME
 
-Statistics::Sampler::Multinomial - Generate multinomial samples given a distribution
+Statistics::Sampler::Multinomial - Generate multinomial samples using Vose's alias method
 
 
 =head1 VERSION
@@ -198,16 +198,25 @@ This document describes Statistics::Sampler::Multinomial version 0.0_001
     #  returns an array ref that might look something like
     #  [3,3,0,2,0]
     
-    # to specify your own PRNG object, in this case using the Mersenne Twister
+    # to specify your own PRNG object, in this case the Mersenne Twister
     my $mrma = Math::Random::MT::Auto->new;
     my $object = Statistics::Sampler::Multinomial->new(prng => $mrma);
 
 
 =head1 DESCRIPTION
 
-=for author to fill in:
-    Write a full description of the module and its features here.
-    Use subsections (=head2, =head3) as appropriate.
+Implements multinomial sampling using Vose's version of the alias method.
+
+The setup time for the alias method is longer than for other methods,
+and the memory requirements are larger since it maintains two lists in memory,
+but this is amortised when 
+when generating repeated samples because only two random numbers are
+needed for each draw, as compared to up to O(log n) for other methods.
+This has a pay off when, for example calculating 
+bootstrap confidence intervals for a set of classes.
+(This statement could do with some more thorough testing).
+
+For more details and background, see L<http://www.keithschwarz.com/darts-dice-coins>.
 
 
 =head1 METHODS
@@ -266,13 +275,18 @@ or zero if initialise has not yet been run.
 =back
 
 
-
-
 =head1 BUGS AND LIMITATIONS
 
 Please report any bugs or feature requests to
-C<bug-statistics-sampler-multinomial@rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org>.
+L<https://github.com/shawnlaffan/perl-statistics-sampler-multinomial/issues>.
+
+=head1 SEE ALSO
+
+Much of the code has been adapted from a python implementation at
+L<https://hips.seas.harvard.edu/blog/2013/03/03/the-alias-method-efficient-sampling-with-many-discrete-outcomes>.
+
+These packages also have multinomial samplers but do not use the alias method:
+L<Math::Random>, L<Math::GSL::Randist>
 
 
 =head1 AUTHOR
@@ -282,7 +296,8 @@ Shawn Laffan  C<< <shawnlaffan@gmail.com> >>
 
 =head1 LICENCE AND COPYRIGHT
 
-Copyright (c) 2016, Shawn Laffan C<< <shawnlaffan@gmail.com> >>. All rights reserved.
+Copyright (c) 2016, Shawn Laffan C<< <shawnlaffan@gmail.com> >>.
+All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
