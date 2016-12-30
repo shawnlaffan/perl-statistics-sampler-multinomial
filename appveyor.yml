@@ -1,17 +1,19 @@
-version: 1.0.{build}
+branches:
+  except:
+    - /travis/
+skip_tags: true
+
+cache:
+  - C:\strawberry
+
 
 install:
-  - cinst StrawberryPerl
-  - path C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
-  - mkdir %APPVEYOR_BUILD_FOLDER%\tmp
-  - set TMPDIR=%APPVEYOR_BUILD_FOLDER%\tmp
-  - perl -V
-  - cpan App::cpanminus
-  - cpanm -q --showdeps --with-develop --with-suggests . | findstr /v "^perl\>" | cpanm -n
-  - 'echo End install at: & time /t'
+  - if not exist "C:\strawberry" cinst strawberryperl
+  - set PATH=C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
+  - cd C:\projects\%APPVEYOR_PROJECT_NAME%
+  - cpanm --installdeps .
+
 
 build_script:
   - perl Makefile.PL
-
-test_script:
   - dmake test
