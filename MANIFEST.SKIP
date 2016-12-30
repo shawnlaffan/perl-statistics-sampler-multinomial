@@ -1,0 +1,12 @@
+\.git
+\.travis.yml
+appveyor.yml
+
+^blib
+pm_to_blib
+
+xt/.+html
+
+MYMETA.json
+MYMETA.yml
+MANIFEST.bak
