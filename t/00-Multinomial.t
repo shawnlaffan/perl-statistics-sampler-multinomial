@@ -8,11 +8,10 @@ use rlib;
 use Test::Most;
 use Statistics::Sampler::Multinomial;
 use Math::Random::MT::Auto;
-#use Math::Round;
 
 use Devel::Symdump;
-my $obj = Devel::Symdump->rnew(__PACKAGE__); 
-my @subs = grep {$_ =~ 'main::test_'} $obj->functions();
+my $functions_object = Devel::Symdump->rnew(__PACKAGE__); 
+my @subs = grep {$_ =~ 'main::test_'} $functions_object->functions();
 
 exit main( @ARGV );
 
@@ -42,13 +41,14 @@ sub main {
 
 sub test_croakers {
     my $prng = Math::Random::MT::Auto->new;
-    my ($result, $e);
+    my ($result, $e, $object);
 
-    my $object = eval {Statistics::Sampler::Multinomial->new};
-    $e = $EVAL_ERROR;
-    ok $e, 'got an error when prng arg not passed';    
+    #  skip this - we have a default now
+    #my $object = eval {Statistics::Sampler::Multinomial->new};
+    #$e = $EVAL_ERROR;
+    #ok $e, 'got an error when prng arg not passed';
 
-    $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
+    $object = Statistics::Sampler::Multinomial->new (prng => $prng);
     $e = $EVAL_ERROR;
     ok !$e, 'no error when prng arg passed';
     
@@ -74,7 +74,7 @@ sub test_prob_generation {
     my $prng = Math::Random::MT::Auto->new;
     my @probs = (2, 3, 5, 10);
     
-    my $object = Statistics::Sampler::Multinomial->new({prng => $prng});
+    my $object = Statistics::Sampler::Multinomial->new(prng => $prng);
     my $result = eval {$object->initialise (data => \@probs)};
     my $e = $EVAL_ERROR;
     diag $e if $e;
@@ -88,7 +88,7 @@ sub test_prob_generation {
     is_deeply ($result, $expected, 'got expected J and q for 2,3,5,10');
 
     @probs = (1..9);
-    $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
+    $object = Statistics::Sampler::Multinomial->new (prng => $prng);
     $result = eval {$object->initialise (data => \@probs)};
 
     $expected = {
@@ -102,8 +102,9 @@ sub test_prob_generation {
 
 sub test_draw {
     my $prng = Math::Random::MT::Auto->new (seed => 2345);
-    my $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
-    my $result = eval {$object->initialise (data => [1..10])};
+
+    my $object = Statistics::Sampler::Multinomial->new (prng => $prng);
+    $object->initialise (data => [1..10]);
 
     subtest 'draw 3 vals from 1..10' => sub {
         my $val;
@@ -113,16 +114,37 @@ sub test_draw {
         }
     };
 
-    #  restart the prng
+    #  restart the prng and get them in one pass
     $prng->set_seed (2345);
+
     my $draws = $object->draw_n_samples (3);
     is_deeply $draws, [5, 7, 4], 'got expected draws';
-    
+
+}
+
+#  use a default PRNG - we only care that the values are defined in these cases
+#  partly due to laziness
+sub test_draw_default_prng {
+    my $object = Statistics::Sampler::Multinomial->new (prng => undef);
+    $object->initialise (data => [1..10]);
+
+    subtest 'draw 3 vals from 1..10' => sub {
+        my $val;
+        foreach my $expected (5, 7, 4) {
+            $val = $object->draw;
+            ok (defined $val, "got defined value");
+        }
+    };
+
+    my $draws = $object->draw_n_samples (3);
+    my $have_undef = grep {!defined $_} @$draws; 
+    ok !$have_undef, 'all values defined for default PRNG';
+
 }
 
 sub test_draw_with_zeroes {
     my $prng = Math::Random::MT::Auto->new (seed => 2345);
-    my $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
+    my $object = Statistics::Sampler::Multinomial->new (prng => $prng);
     my $result = eval {$object->initialise (data => [1..10,0,0])};
 
     subtest 'draw 3 vals from 1..10,0,0' => sub {
@@ -166,7 +188,7 @@ sub test_draw_real_data {
     my $prng   = Math::Random::MT::Auto->new (seed => 2345);
     #  need to update expected results if this is removed/commented
     my @waste_three_vals = map {$prng->rand} (0..2);
-    my $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
+    my $object = Statistics::Sampler::Multinomial->new (prng => $prng);
     my $result = eval {$object->initialise (data => $probs)};
 
     subtest 'got expected initialisation from iNextPD data for J array' => sub {

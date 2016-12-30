@@ -14,22 +14,32 @@ use Scalar::Util qw /blessed/;
 use POSIX qw /floor/;
 
 sub new {
-    my ($class, $args) = @_;
+    my ($class, %args) = @_;
     
-    my $prng = $args->{prng}
-      // croak 'prng arg not passed';  #  should make a default which calls the perl PRNG 
+    my $prng = $args{prng};
 
-    croak 'prng arg is not an object' if not blessed $prng;
-    croak 'prng arg does not have rand() method' if not $prng->can('rand');
+    #  Math::Random::MT::Auto has boolean op overloading
+    #  so make sure we don't trigger it or our tests fail
+    #  (and we waste a random number, but that's less of an issue)
+    if (defined $prng) {
+        croak 'prng arg is not an object'
+          if not blessed $prng;
+        croak 'prng arg does not have rand() method'
+          if not $prng->can('rand');
+    }
+
+    $prng //= Statistics::Sampler::Multinomial::DefaultRand->new;
 
     my $self = bless {prng => $prng}, $class;
+
     return $self;
 }
 
 sub initialise {
     my ($self, %args) = @_;
 
-    
+    #  fallbacks are from a pre-release interface
+    #  and will be removed at some point    
     my $probs = $args{data} || $args{prob_array};
     my $probs_sum_to_one = $args{data_sum_to_one} // $args{probs_sum_to_one};
 
@@ -89,11 +99,11 @@ sub initialise {
     # handle numeric stability issues
     # courtesy http://www.keithschwarz.com/darts-dice-coins/
     while (scalar @larger) {
-        my $g = shift @larger;
+        my $g  = shift @larger;
         $q[$g] = 1;
     }
     while (scalar @smaller) {
-        my $l = shift @smaller;
+        my $l  = shift @smaller;
         $q[$l] = 1;
     }
 
@@ -118,16 +128,17 @@ sub draw {
     my ($self, $args) = @_;
 
     my $prng = $self->{prng};
-
+    
     my $q  = $self->{q}
       // croak 'it appears setup has not been run yet';
+
     my $J  = $self->{J};
     my $K  = scalar @$J;
     my $kk = floor ($prng->rand * $K);
  
     # Draw from the binary mixture, either keeping the
     # small one, or choosing the associated larger one.
-    return $prng->rand < $q->[$kk] ? $kk : $J->[$kk];
+    return ($prng->rand < $q->[$kk]) ? $kk : $J->[$kk];
 }
 
 sub draw_n_samples {
@@ -149,6 +160,17 @@ sub draw_n_samples {
     }
  
     return wantarray ? @draws : \@draws;
+}
+
+#  Cuckoo package to act as a method wrapper
+#  to use the perl PRNG stream by default. 
+package Statistics::Sampler::Multinomial::DefaultRand {
+    sub new {
+        return bless {}, __PACKAGE__;
+    }
+    sub rand {
+        rand();
+    }
 }
 
 1;
