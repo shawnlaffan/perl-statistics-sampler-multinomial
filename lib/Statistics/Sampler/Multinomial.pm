@@ -27,7 +27,7 @@ sub new {
           if not $prng->can('rand');
     }
 
-    $prng //= Statistics::Sampler::Multinomial::DefaultRand->new;
+    $prng //= Statistics::Sampler::Multinomial::DefaultPRNG->new;
 
     my $self = bless {prng => $prng}, $class;
 
@@ -163,7 +163,7 @@ sub draw_n_samples {
 
 #  Cuckoo package to act as a method wrapper
 #  to use the perl PRNG stream by default. 
-package Statistics::Sampler::Multinomial::DefaultRand {
+package Statistics::Sampler::Multinomial::DefaultPRNG {
     sub new {
         return bless {}, __PACKAGE__;
     }
