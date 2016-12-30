@@ -1,0 +1,198 @@
+
+use strict;
+use warnings;
+use 5.010;
+use English qw /-no_match_vars/;
+
+use rlib;
+use Test::Most;
+use Statistics::Sampler::Multinomial;
+use Math::Random::MT::Auto;
+#use Math::Round;
+
+use Devel::Symdump;
+my $obj = Devel::Symdump->rnew(__PACKAGE__); 
+my @subs = grep {$_ =~ 'main::test_'} $obj->functions();
+
+exit main( @ARGV );
+
+sub main {
+    my @args  = @_;
+
+    if (@args) {
+        for my $name (@args) {
+            die "No test method test_$name\n"
+                if not my $func = (__PACKAGE__->can( 'test_' . $name ) || __PACKAGE__->can( $name ));
+            $func->();
+        }
+        done_testing;
+        return 0;
+    }
+
+
+    foreach my $sub (sort @subs) {
+        no strict 'refs';
+        $sub->();
+    }
+
+    done_testing;
+    return 0;
+}
+
+
+sub test_croakers {
+    my $prng = Math::Random::MT::Auto->new;
+    my ($result, $e);
+
+    my $object = eval {Statistics::Sampler::Multinomial->new};
+    $e = $EVAL_ERROR;
+    ok $e, 'got an error when prng arg not passed';    
+
+    $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
+    $e = $EVAL_ERROR;
+    ok !$e, 'no error when prng arg passed';
+    
+    $result = eval {$object->draw};
+    $e = $EVAL_ERROR;
+    ok $e, 'error when draw called before setup';
+
+    $result = eval {$object->setup ({1..2})};
+    $e = $EVAL_ERROR;
+    ok $e, 'error when passed a hash ref';
+    
+    $result = eval {$object->setup (1..2)};
+    $e = $EVAL_ERROR;
+    ok $e, 'error when passed a flattened list';
+    
+    $result = eval {$object->setup ([-1, 2, 4])};
+    $e = $EVAL_ERROR;
+    ok $e, 'error when passed a negative value';
+    
+}
+
+sub test_prob_generation {
+    my $prng = Math::Random::MT::Auto->new;
+    my @probs = (2, 3, 5, 10);
+    
+    my $object = Statistics::Sampler::Multinomial->new({prng => $prng});
+    my $result = eval {$object->setup (\@probs)};
+    my $e = $EVAL_ERROR;
+    diag $e if $e;
+    ok !$e, 'no eval error when expected args passed';
+    
+    my $expected = {
+        J => [3, 3, 0, 0],
+        q => [0.4, 0.6, 1, 1],
+    };
+
+    is_deeply ($result, $expected, 'got expected J and q for 2,3,5,10');
+
+    @probs = (1..9);
+    $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
+    $result = eval {$object->setup (\@probs)};
+
+    $expected = {
+        J => [7,   8,   8,   8,   0, 0, 5,   6,   7  ],
+        q => [0.2, 0.4, 0.6, 0.8, 1, 1, 0.8, 0.4, 0.6],
+    };
+
+    is_deeply ($result, $expected, 'got expected J and q for 1..9');
+    
+}
+
+sub test_draw {
+    my $prng = Math::Random::MT::Auto->new (seed => 2345);
+    my $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
+    my $result = eval {$object->setup ([1..10])};
+
+    subtest 'draw 3 vals from 1..10' => sub {
+        my $val;
+        foreach my $expected (5, 7, 4) {
+            $val = $object->draw;
+            is ($val, $expected, "got $expected");
+        }
+    };
+
+    #  restart the prng
+    $prng->set_seed (2345);
+    my $draws = $object->draw_n_samples (3);
+    is_deeply $draws, [5, 7, 4], 'got expected draws';
+    
+}
+
+sub test_draw_with_zeroes {
+    my $prng = Math::Random::MT::Auto->new (seed => 2345);
+    my $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
+    my $result = eval {$object->setup ([1..10,0,0])};
+
+    subtest 'draw 3 vals from 1..10,0,0' => sub {
+        my $val;
+        foreach my $expected (6, 8, 5) {
+            $val = $object->draw;
+            is ($val, $expected, "got $expected");
+        }
+    };
+
+    #  restart the prng
+    $prng->set_seed (2345);
+    my $draws = $object->draw_n_samples (3);
+    is_deeply $draws, [6, 8, 5], 'got expected draws';
+    
+}
+
+sub test_draw_real_data {
+    #  data from iNextPD
+    my $probs = [
+        0.202970297029703,  0.0891089099789782, 0.0792079135924584, 0.0792079135924584,
+        0.0742574058050749, 0.0594055434175576, 0.0544543942902742, 0.0544543942902742,
+        0.044547402121497,  0.0395861524290977, 0.0346094438864318, 0.0245054606625901,
+        0.0245054606625901, 0.0192524351078994, 0.0192524351078994, 0.0137111891577485,
+        0.0137111891577485, 0.00780849703229859, 0.00780849703229859, 0.00780849703229859,
+        0.00780849703229859, 0.00208513958272084, 0.00208513958272084, 0.00208513958272084,
+        0.00208513958272084, 0.00208513958272084, 0.00208513958272084, 0.00590144681683984,
+        0.00590144681683984, 0.00590144681683984, 0.00590144681683984, 0.00590144681683984,
+    ];
+    my $expected = {
+        J => [ qw / 0  0  1  2  3  4  5  6  7  8  9  0  0  0  0  0
+                    0  0  0  0  0  1  1  2  3  3  4  4  5  6  7 10/],
+        q => [ 1,           0.82744144,  0.84250739,  0.24112969,  0.57302752,  0.94121977,
+               0.85139608,  0.92000916,  0.98862225,  0.56310538,  0.2963485,   0.78417474,
+               0.78417474,  0.61607792,  0.61607792,  0.43875805,  0.43875805,  0.24987191,
+               0.24987191,  0.24987191,  0.24987191,  0.06672447,  0.06672447,  0.06672447,
+               0.06672447,  0.06672447,  0.06672447,  0.1888463,   0.1888463,   0.1888463,
+               0.1888463,   0.1888463,],
+    };
+    
+    my $prng   = Math::Random::MT::Auto->new (seed => 2345);
+    #  need to update expected results if this is removed/commented
+    my @waste_three_vals = map {$prng->rand} (0..2);
+    my $object = Statistics::Sampler::Multinomial->new ({prng => $prng});
+    my $result = eval {$object->setup ($probs)};
+
+    subtest 'got expected setup from iNextPD data for J array' => sub {
+        my $key = 'J';
+        for my $i (0 .. $#$probs) {
+            my $got = $result->{$key}[$i];
+            my $exp = $expected->{$key}[$i];
+            is ($got, $exp, "result->{$key}[$i] matches");
+        }
+    };
+    
+    my $precision = "%.6f";  #  we get precision effects with these data
+    subtest "got expected setup from iNextPD data for q array at precision $precision" => sub {
+        my $key = 'q';
+        for my $i (0 .. $#$probs) {
+            my $got = sprintf ($precision, $result->{$key}[$i]);
+            my $exp = sprintf ($precision, $expected->{$key}[$i]);
+            is ($got, $exp, "result->{$key}[$i] matches at precision $precision");
+        }
+    };
+
+    my $expected_draws = [
+        0, 20, 3, 0,  2, 11, 1, 8, 1,  1, 7, 4, 19, 2, 20, 0,
+        0,  2, 1, 5, 16, 13, 0, 0, 3, 7, 13, 0,  8, 1,  8, 0,
+    ];
+    my $draws = $object->draw_n_samples (scalar @$probs);
+    is_deeply $draws, $expected_draws, 'got expected draws from iNextPD data';
+
+}
