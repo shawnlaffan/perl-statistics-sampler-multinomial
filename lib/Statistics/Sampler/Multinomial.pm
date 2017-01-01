@@ -155,7 +155,10 @@ sub draw_n_samples {
         my $kk = int ($prng->rand * $K);
         # Draw from the binary mixture, either keeping the
         # small one, or choosing the associated larger one.
-        push @draws, $prng->rand < $q->[$kk] ? $kk : $J->[$kk];
+        # {SWL: should try to use Data::Alias or refaliasing here
+        # as the derefs cause overhead, albeit the big overhead
+        # is the method calls}
+        push @draws, ($prng->rand < $q->[$kk]) ? $kk : $J->[$kk];
     }
  
     return wantarray ? @draws : \@draws;
@@ -284,7 +287,8 @@ L<https://github.com/shawnlaffan/perl-statistics-sampler-multinomial/issues>.
 Much of the code has been adapted from a python implementation at
 L<https://hips.seas.harvard.edu/blog/2013/03/03/the-alias-method-efficient-sampling-with-many-discrete-outcomes>.
 
-These packages also have multinomial samplers but do not use the alias method:
+These packages also have multinomial samplers but do not use the alias method,
+and you cannot supply your own PRNG:
 L<Math::Random>, L<Math::GSL::Randist>
 
 
