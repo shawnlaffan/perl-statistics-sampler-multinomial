@@ -151,17 +151,17 @@ sub draw_n_samples {
     my $K  = scalar @$J;
     
     my @draws;
-    foreach my $i (1..$n) {
+    for (1..$n) {
         my $kk = int ($prng->rand * $K);
         # Draw from the binary mixture, either keeping the
         # small one, or choosing the associated larger one.
-        # {SWL: should try to use Data::Alias or refaliasing here
+        # {SWL: could try to use Data::Alias or refaliasing here
         # as the derefs cause overhead, albeit the big overhead
         # is the method calls}
         push @draws, ($prng->rand < $q->[$kk]) ? $kk : $J->[$kk];
     }
- 
-    return wantarray ? @draws : \@draws;
+
+    return \@draws;
 }
 
 #  Cuckoo package to act as a method wrapper
@@ -260,12 +260,10 @@ Croaks if called before initialise has been called.
 
 =item $object->draw_n_samples ($n)
 
-Returns an array of $n samples.  Each array entry
+Returns an array ref of $n samples.  Each array entry
 is the value of a randomly selected class number.
-e.g. for $n=5 and the K=3 example from above,
+e.g. for $n=3 and the K=5 example from above,
 one could get (0,2,1,0,0).
-
-Returns an array ref in scalar context.
 
 Croaks if called before initialise has been called.
 
