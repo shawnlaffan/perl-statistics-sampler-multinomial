@@ -15,8 +15,9 @@ WriteMakefile(
         'Scalar::Util' => 0,
         'List::MoreUtils' => 0,
     },
-    BUILD_REQUIRES => {
+    TEST_REQUIRES => {
         'Test::More' => 0,
+        'Test::Most' => 0,
         'rlib'       => 0,
         'Math::Random::MT::Auto' => 0,
     },
