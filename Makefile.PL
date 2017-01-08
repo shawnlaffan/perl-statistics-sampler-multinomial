@@ -20,6 +20,7 @@ WriteMakefile(
         'Test::Most' => 0,
         'rlib'       => 0,
         'Math::Random::MT::Auto' => 0,
+        'Devel::Symdump' => 0,
     },
     META_MERGE => {
         'meta-spec' => { version => 2 },
