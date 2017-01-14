@@ -6,7 +6,7 @@ use English qw /-no_match_vars/;
 
 use rlib;
 use Test::Most;
-use Statistics::Sampler::Multinomial;
+use Statistics::Sampler::Multinomial::AliasMethod;
 use Math::Random::MT::Auto;
 
 use Devel::Symdump;
@@ -46,19 +46,19 @@ sub test_croakers {
     my ($result, $e, $object);
 
     $object = eval {
-        Statistics::Sampler::Multinomial->new (data => undef);
+        Statistics::Sampler::Multinomial::AliasMethod->new (data => undef);
     };
     $e = $EVAL_ERROR;
     ok $e, 'error when data arg not passed or is undef';
 
     $object = eval {
-        Statistics::Sampler::Multinomial->new (data => {});
+        Statistics::Sampler::Multinomial::AliasMethod->new (data => {});
     };
     $e = $EVAL_ERROR;
     ok $e, 'error when data arg not an array ref';
 
     $object = eval {
-        Statistics::Sampler::Multinomial->new (
+        Statistics::Sampler::Multinomial::AliasMethod->new (
             data => [1,2],
             prng => $prng,
         );
@@ -71,7 +71,7 @@ sub test_croakers {
     ok !$e, 'no error when draw called before _initialise_alias_tables';
 
     $object = eval {
-        Statistics::Sampler::Multinomial->new (
+        Statistics::Sampler::Multinomial::AliasMethod->new (
             data => {a => 2},
             prng => $prng,
         );
@@ -80,7 +80,7 @@ sub test_croakers {
     ok $e, 'error when passed a hash ref as the data arg';
 
     $object = eval {
-        Statistics::Sampler::Multinomial->new (
+        Statistics::Sampler::Multinomial::AliasMethod->new (
             data => 'some scalar',
             prng => $prng,
         );
@@ -89,7 +89,7 @@ sub test_croakers {
     ok $e, 'error when passed a scalar as the data arg';
     
     $object = eval {
-        Statistics::Sampler::Multinomial->new (
+        Statistics::Sampler::Multinomial::AliasMethod->new (
             data => [-1, 2, 4],
             prng => $prng,
         );
@@ -102,7 +102,7 @@ sub test_prob_generation {
     my $prng = Math::Random::MT::Auto->new;
     my @probs = (2, 3, 5, 10);
     
-    my $object = Statistics::Sampler::Multinomial->new(
+    my $object = Statistics::Sampler::Multinomial::AliasMethod->new(
         prng => $prng,
         data => \@probs,
     );
@@ -117,7 +117,7 @@ sub test_prob_generation {
     is_deeply (\%result, $expected, 'got expected J and q for 2,3,5,10');
 
     @probs = (1..9);
-    $object = Statistics::Sampler::Multinomial->new (
+    $object = Statistics::Sampler::Multinomial::AliasMethod->new (
         prng => $prng,
         data => \@probs,
     );
@@ -135,7 +135,7 @@ sub test_prob_generation {
 sub test_draw {
     my $prng = Math::Random::MT::Auto->new (seed => 2345);
 
-    my $object = Statistics::Sampler::Multinomial->new (
+    my $object = Statistics::Sampler::Multinomial::AliasMethod->new (
         data => [1..10],
         prng => $prng,
     );
@@ -159,7 +159,7 @@ sub test_draw {
 #  use a default PRNG - we only care that the values are defined in these cases
 #  partly due to laziness
 sub test_draw_default_prng {
-    my $object = Statistics::Sampler::Multinomial->new (
+    my $object = Statistics::Sampler::Multinomial::AliasMethod->new (
         prng => undef,
         data => [1..10],
     );
@@ -180,7 +180,7 @@ sub test_draw_default_prng {
 
 sub test_draw_with_zeroes {
     my $prng = Math::Random::MT::Auto->new (seed => 2345);
-    my $object = Statistics::Sampler::Multinomial->new (
+    my $object = Statistics::Sampler::Multinomial::AliasMethod->new (
         prng => $prng,
         data => [1..10,0,0],
     );
@@ -226,7 +226,7 @@ sub test_draw_real_data {
     my $prng   = Math::Random::MT::Auto->new (seed => 2345);
     #  need to update expected results if this is removed/commented
     my @waste_three_vals = map {$prng->rand} (0..2);
-    my $object = Statistics::Sampler::Multinomial->new (
+    my $object = Statistics::Sampler::Multinomial::AliasMethod->new (
         prng => $prng,
         data => $probs,
     );
