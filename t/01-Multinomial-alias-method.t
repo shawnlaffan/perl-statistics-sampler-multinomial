@@ -7,6 +7,7 @@ use rlib;
 use Test::Most;
 use Statistics::Sampler::Multinomial::AliasMethod;
 use Math::Random::MT::Auto;
+use List::Util qw /sum/;
 
 use Devel::Symdump;
 my $functions_object = Devel::Symdump->rnew(__PACKAGE__); 
@@ -151,8 +152,10 @@ sub test_draw {
     $prng->set_seed (2345);
 
     my $draws = $object->draw_n_samples (3);
-    is_deeply $draws, [5, 7, 4], 'got expected draws';
-
+    #is_deeply $draws, [5, 7, 4], 'got expected draws';
+    my $expected = [(0) x 10];
+    @$expected[5, 7, 4] = (1) x 3;
+    is_deeply $draws, $expected, 'got expected draws from draw_n_samples';
 }
 
 #  use a default PRNG - we only care that the values are defined in these cases
@@ -195,7 +198,9 @@ sub test_draw_with_zeroes {
     #  restart the prng
     $prng->set_seed (2345);
     my $draws = $object->draw_n_samples (3);
-    is_deeply $draws, [6, 8, 5], 'got expected draws';
+    my $expected = [(0) x 12];
+    @$expected[6, 8, 5] = (1) x 3;
+    is_deeply $draws, $expected, 'got expected draws with zeroes';
     
 }
 
@@ -251,11 +256,15 @@ sub test_draw_real_data {
         }
     };
 
+    #my $expected_draws = [
+    #    0, 20, 3, 0,  2, 11, 1, 8, 1,  1, 7, 4, 19, 2, 20, 0,
+    #    0,  2, 1, 5, 16, 13, 0, 0, 3, 7, 13, 0,  8, 1,  8, 0,
+    #];
     my $expected_draws = [
-        0, 20, 3, 0,  2, 11, 1, 8, 1,  1, 7, 4, 19, 2, 20, 0,
-        0,  2, 1, 5, 16, 13, 0, 0, 3, 7, 13, 0,  8, 1,  8, 0,
+        8, 5, 3, 2, 1, 1, 0, 2, 3, 0, 0, 1, 0, 2, 0, 0,
+        1, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ];
     my $draws = $object->draw_n_samples (scalar @$probs);
-    is_deeply $draws, $expected_draws, 'got expected draws from iNextPD data';
-
+    is_deeply $draws, $expected_draws, 'got expected draws for iNextPD data';
+    is (sum (@$draws), scalar @$probs, 'got expected number of draws for iNextPD data')
 }

@@ -225,10 +225,10 @@ Returns the sampled class number.
 
 =item $object->draw_n_samples ($n)
 
-Returns an array ref of $n samples.  Each array entry
-is the abundance of that class number.
+Returns an array ref of $n samples across the K classes,
+where K is the length of the data array passed in to the call to new.
 e.g. for $n=3 and the K=5 example from above,
-one could get (0,2,1,0,0).
+one could get (0,1,2,0,0).
 
 =item $object->get_class_count
 

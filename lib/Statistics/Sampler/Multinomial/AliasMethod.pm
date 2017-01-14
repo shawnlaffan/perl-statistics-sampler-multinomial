@@ -131,7 +131,7 @@ sub draw_n_samples {
     my $J  = $self->{J};
     my $K  = scalar @$J;
     
-    my @draws;
+    my @draws = (0) x $K;
     for (1..$n) {
         my $kk = int ($prng->rand * $K);
         # Draw from the binary mixture, either keeping the
@@ -139,7 +139,8 @@ sub draw_n_samples {
         # {SWL: could try to use Data::Alias or refaliasing here
         # as the derefs cause overhead, albeit the big overhead
         # is the method calls}
-        push @draws, ($prng->rand < $q->[$kk]) ? $kk : $J->[$kk];
+        #push @draws, ($prng->rand < $q->[$kk]) ? $kk : $J->[$kk];
+        $draws[($prng->rand < $q->[$kk]) ? $kk : $J->[$kk]]++;
     }
 
     return \@draws;
@@ -231,7 +232,8 @@ method that returns a value in the interval [0,1)
 
 By default it will standardise the data to sum to one
 but callers can skip this step by promising that the
-data already sum to one.  No checks of the validity of
+data already sum to one (thus speeding up the code).
+No checks of the validity of
 such promises are made, so expect failures for lying.
 
 =item $object->draw
@@ -241,10 +243,10 @@ Returns the chosen class number.
 
 =item $object->draw_n_samples ($n)
 
-Returns an array ref of $n samples.  Each array entry
-is the value of a randomly selected class number.
+Returns an array ref of $n samples across the K classes,
+where K is the length of the data array passed in to the call to new.
 e.g. for $n=3 and the K=5 example from above,
-one could get (0,2,1,0,0).
+one could get (0,1,2,0,0).
 
 =item $object->get_class_count
 

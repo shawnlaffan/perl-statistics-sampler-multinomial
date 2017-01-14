@@ -7,6 +7,7 @@ use rlib;
 use Test::Most;
 use Statistics::Sampler::Multinomial;
 use Math::Random::MT::Auto;
+use List::Util qw /sum/;
 
 use Devel::Symdump;
 my $functions_object = Devel::Symdump->rnew(__PACKAGE__); 
@@ -97,3 +98,34 @@ sub test_croakers {
     ok $e, 'error when passed a negative value in the data';
 }
 
+sub test_draw_real_data {
+    #  data from iNextPD
+    my $probs = [
+        0.202970297029703,  0.0891089099789782, 0.0792079135924584, 0.0792079135924584,
+        0.0742574058050749, 0.0594055434175576, 0.0544543942902742, 0.0544543942902742,
+        0.044547402121497,  0.0395861524290977, 0.0346094438864318, 0.0245054606625901,
+        0.0245054606625901, 0.0192524351078994, 0.0192524351078994, 0.0137111891577485,
+        0.0137111891577485, 0.00780849703229859, 0.00780849703229859, 0.00780849703229859,
+        0.00780849703229859, 0.00208513958272084, 0.00208513958272084, 0.00208513958272084,
+        0.00208513958272084, 0.00208513958272084, 0.00208513958272084, 0.00590144681683984,
+        0.00590144681683984, 0.00590144681683984, 0.00590144681683984, 0.00590144681683984,
+    ];
+    
+    my $prng   = Math::Random::MT::Auto->new (seed => 2345);
+    #  need to update expected results if this is removed/commented
+    my @waste_three_vals = map {$prng->rand} (0..2);
+    my $object = Statistics::Sampler::Multinomial->new (
+        prng => $prng,
+        data => $probs,
+    );
+
+    my $expected_draws = [
+        6, 3, 3, 3, 3, 3, 1, 2, 2, 0, 1, 1, 0, 0, 0, 2,
+        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+    ];
+    my $draws = $object->draw_n_samples (scalar @$probs);
+
+    is_deeply $draws, $expected_draws, 'got expected draws for iNextPD data';
+    is (sum (@$draws), scalar @$probs, 'got expected number of draws for iNextPD ')
+
+}
