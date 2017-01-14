@@ -4,7 +4,7 @@ use 5.010;
 use warnings;
 use strict;
 
-our $VERSION = '0.0_001';
+our $VERSION = '0.1';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
