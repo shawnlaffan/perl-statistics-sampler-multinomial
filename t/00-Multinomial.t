@@ -13,6 +13,8 @@ use Devel::Symdump;
 my $functions_object = Devel::Symdump->rnew(__PACKAGE__); 
 my @subs = grep {$_ =~ 'main::test_'} $functions_object->functions();
 
+my @alias_keys = qw /J q/;
+
 exit main( @ARGV );
 
 sub main {
@@ -43,63 +45,100 @@ sub test_croakers {
     my $prng = Math::Random::MT::Auto->new;
     my ($result, $e, $object);
 
-    $object = Statistics::Sampler::Multinomial->new (prng => $prng);
+    $object = eval {
+        Statistics::Sampler::Multinomial->new (data => undef);
+    };
+    $e = $EVAL_ERROR;
+    ok $e, 'error when data arg not passed or is undef';
+
+    $object = eval {
+        Statistics::Sampler::Multinomial->new (data => {});
+    };
+    $e = $EVAL_ERROR;
+    ok $e, 'error when data arg not an array ref';
+
+    $object = eval {
+        Statistics::Sampler::Multinomial->new (
+            data => [1,2],
+            prng => $prng,
+        );
+    };
     $e = $EVAL_ERROR;
     ok !$e, 'no error when prng arg passed';
     
     $result = eval {$object->draw};
     $e = $EVAL_ERROR;
-    ok $e, 'error when draw called before initialise';
+    ok !$e, 'no error when draw called before initialise';
 
-    $result = eval {$object->initialise (data => {1..2})};
+    $object = eval {
+        Statistics::Sampler::Multinomial->new (
+            data => {a => 2},
+            prng => $prng,
+        );
+    };
     $e = $EVAL_ERROR;
     ok $e, 'error when passed a hash ref as the data arg';
-    
-    $result = eval {$object->initialise (data => 1)};
+
+    $object = eval {
+        Statistics::Sampler::Multinomial->new (
+            data => 'some scalar',
+            prng => $prng,
+        );
+    };
     $e = $EVAL_ERROR;
     ok $e, 'error when passed a scalar as the data arg';
     
-    $result = eval {$object->initialise (data => [-1, 2, 4])};
+    $object = eval {
+        Statistics::Sampler::Multinomial->new (
+            data => [-1, 2, 4],
+            prng => $prng,
+        );
+    };
     $e = $EVAL_ERROR;
     ok $e, 'error when passed a negative value in the data';
-    
 }
 
 sub test_prob_generation {
     my $prng = Math::Random::MT::Auto->new;
     my @probs = (2, 3, 5, 10);
     
-    my $object = Statistics::Sampler::Multinomial->new(prng => $prng);
-    my $result = eval {$object->initialise (data => \@probs)};
-    my $e = $EVAL_ERROR;
-    diag $e if $e;
-    ok !$e, 'no eval error when expected args passed';
+    my $object = Statistics::Sampler::Multinomial->new(
+        prng => $prng,
+        data => \@probs,
+    );
+
+    my %result = $object->initialise;
     
     my $expected = {
         J => [3, 3, 0, 0],
         q => [0.4, 0.6, 1, 1],
     };
 
-    is_deeply ($result, $expected, 'got expected J and q for 2,3,5,10');
+    is_deeply (\%result, $expected, 'got expected J and q for 2,3,5,10');
 
     @probs = (1..9);
-    $object = Statistics::Sampler::Multinomial->new (prng => $prng);
-    $result = eval {$object->initialise (data => \@probs)};
+    $object = Statistics::Sampler::Multinomial->new (
+        prng => $prng,
+        data => \@probs,
+    );
+    %result = $object->initialise;
 
     $expected = {
         J => [7,   8,   8,   8,   0, 0, 5,   6,   7  ],
         q => [0.2, 0.4, 0.6, 0.8, 1, 1, 0.8, 0.4, 0.6],
     };
 
-    is_deeply ($result, $expected, 'got expected J and q for 1..9');
+    is_deeply (\%result, $expected, 'got expected J and q for 1..9');
     
 }
 
 sub test_draw {
     my $prng = Math::Random::MT::Auto->new (seed => 2345);
 
-    my $object = Statistics::Sampler::Multinomial->new (prng => $prng);
-    $object->initialise (data => [1..10]);
+    my $object = Statistics::Sampler::Multinomial->new (
+        data => [1..10],
+        prng => $prng,
+    );
 
     subtest 'draw 3 vals from 1..10' => sub {
         my $val;
@@ -120,8 +159,10 @@ sub test_draw {
 #  use a default PRNG - we only care that the values are defined in these cases
 #  partly due to laziness
 sub test_draw_default_prng {
-    my $object = Statistics::Sampler::Multinomial->new (prng => undef);
-    $object->initialise (data => [1..10]);
+    my $object = Statistics::Sampler::Multinomial->new (
+        prng => undef,
+        data => [1..10],
+    );
 
     subtest 'draw 3 vals from 1..10' => sub {
         my $val;
@@ -139,8 +180,10 @@ sub test_draw_default_prng {
 
 sub test_draw_with_zeroes {
     my $prng = Math::Random::MT::Auto->new (seed => 2345);
-    my $object = Statistics::Sampler::Multinomial->new (prng => $prng);
-    my $result = eval {$object->initialise (data => [1..10,0,0])};
+    my $object = Statistics::Sampler::Multinomial->new (
+        prng => $prng,
+        data => [1..10,0,0],
+    );
 
     subtest 'draw 3 vals from 1..10,0,0' => sub {
         my $val;
@@ -183,13 +226,17 @@ sub test_draw_real_data {
     my $prng   = Math::Random::MT::Auto->new (seed => 2345);
     #  need to update expected results if this is removed/commented
     my @waste_three_vals = map {$prng->rand} (0..2);
-    my $object = Statistics::Sampler::Multinomial->new (prng => $prng);
-    my $result = eval {$object->initialise (data => $probs)};
+    my $object = Statistics::Sampler::Multinomial->new (
+        prng => $prng,
+        data => $probs,
+    );
+    #  messy - should not know about internals
+    my %result = $object->initialise;
 
     subtest 'got expected initialisation from iNextPD data for J array' => sub {
         my $key = 'J';
         for my $i (0 .. $#$probs) {
-            my $got = $result->{$key}[$i];
+            my $got = $result{$key}[$i];
             my $exp = $expected->{$key}[$i];
             is ($got, $exp, "result->{$key}[$i] matches");
         }
@@ -199,7 +246,7 @@ sub test_draw_real_data {
     subtest "got expected initialisation from iNextPD data for q array at precision $precision" => sub {
         my $key = 'q';
         for my $i (0 .. $#$probs) {
-            my $got = sprintf ($precision, $result->{$key}[$i]);
+            my $got = sprintf ($precision, $result{$key}[$i]);
             my $exp = sprintf ($precision, $expected->{$key}[$i]);
             is ($got, $exp, "result->{$key}[$i] matches at precision $precision");
         }

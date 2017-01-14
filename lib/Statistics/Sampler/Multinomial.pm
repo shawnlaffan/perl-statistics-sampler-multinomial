@@ -15,6 +15,16 @@ use Scalar::Util qw /blessed/;
 sub new {
     my ($class, %args) = @_;
     
+    my $data = $args{data};
+    croak 'data argument not passed'
+      if !defined $data;
+    croak 'data argument is not an array ref'
+      if !is_arrayref ($data);
+
+    my $first_neg_idx = first_index {$_ < 0} @$data;
+    croak "negative values passed in data array"
+      if $first_neg_idx >= 0;
+    
     my $prng = $args{prng};
 
     #  Math::Random::MT::Auto has boolean op overloading
@@ -29,9 +39,13 @@ sub new {
 
     $prng //= Statistics::Sampler::Multinomial::DefaultPRNG->new;
 
-    my $self = bless {prng => $prng}, $class;
+    my $self = {
+        data => $data,
+        prng => $prng,
+        data_sum_to_one => $args{data_sum_to_one},
+    };
 
-    return $self;
+    return bless $self, $class;
 }
 
 sub initialise {
@@ -39,15 +53,8 @@ sub initialise {
 
     #  fallbacks are from a pre-release interface
     #  and will be removed at some point    
-    my $probs = $args{data} || $args{prob_array};
-    my $probs_sum_to_one = $args{data_sum_to_one} // $args{probs_sum_to_one};
-
-    croak "data arg is not an array ref"
-      if !is_arrayref($probs);
-
-    my $have_neg = first_index {$_ < 0} @$probs;
-    croak "negative values passed in data array"
-      if $have_neg >= 0;
+    my $probs = $self->{data};
+    my $probs_sum_to_one = $self->{data_sum_to_one};
 
     if (!$probs_sum_to_one) {  #  caller has not promised they sum to 1
         my $sum = sum (@$probs);
@@ -129,7 +136,7 @@ sub draw {
     my $prng = $self->{prng};
     
     my $q  = $self->{q}
-      // croak 'it appears setup has not been run yet';
+      // do {$self->initialise; $self->{q}};
 
     my $J  = $self->{J};
     my $K  = scalar @$J;
@@ -146,7 +153,7 @@ sub draw_n_samples {
     my $prng = $self->{prng};
 
     my $q  = $self->{q}
-      // croak 'it appears setup has not been run yet';
+      // do {$self->initialise; $self->{q}};
     my $J  = $self->{J};
     my $K  = scalar @$J;
     
