@@ -37,7 +37,7 @@ sub new {
     $self->validate_prng_object ($prng);
     $self->{prng}
       =  $prng
-      // Statistics::Sampler::Multinomial::DefaultPRNG->new;
+      // "${class}::DefaultPRNG"->new;
 
     return $self;
 }
@@ -184,7 +184,7 @@ sub draw_n_samples {
 
 #  Cuckoo package to act as a method wrapper
 #  to use the perl PRNG stream by default. 
-package Statistics::Sampler::Multinomial::DefaultPRNG {
+package Statistics::Sampler::Multinomial::AliasMethod::DefaultPRNG {
     sub new {
         return bless {}, __PACKAGE__;
     }
