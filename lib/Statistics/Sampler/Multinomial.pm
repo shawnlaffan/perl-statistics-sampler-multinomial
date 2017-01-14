@@ -48,7 +48,7 @@ sub new {
     return bless $self, $class;
 }
 
-sub initialise {
+sub _initialise_alias_tables {
     my ($self, %args) = @_;
 
     #  fallbacks are from a pre-release interface
@@ -136,7 +136,7 @@ sub draw {
     my $prng = $self->{prng};
     
     my $q  = $self->{q}
-      // do {$self->initialise; $self->{q}};
+      // do {$self->_initialise_alias_tables; $self->{q}};
 
     my $J  = $self->{J};
     my $K  = scalar @$J;

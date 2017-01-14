@@ -68,7 +68,7 @@ sub test_croakers {
     
     $result = eval {$object->draw};
     $e = $EVAL_ERROR;
-    ok !$e, 'no error when draw called before initialise';
+    ok !$e, 'no error when draw called before _initialise_alias_tables';
 
     $object = eval {
         Statistics::Sampler::Multinomial->new (
@@ -107,7 +107,7 @@ sub test_prob_generation {
         data => \@probs,
     );
 
-    my %result = $object->initialise;
+    my %result = $object->_initialise_alias_tables;
     
     my $expected = {
         J => [3, 3, 0, 0],
@@ -121,7 +121,7 @@ sub test_prob_generation {
         prng => $prng,
         data => \@probs,
     );
-    %result = $object->initialise;
+    %result = $object->_initialise_alias_tables;
 
     $expected = {
         J => [7,   8,   8,   8,   0, 0, 5,   6,   7  ],
@@ -231,7 +231,7 @@ sub test_draw_real_data {
         data => $probs,
     );
     #  messy - should not know about internals
-    my %result = $object->initialise;
+    my %result = $object->_initialise_alias_tables;
 
     subtest 'got expected initialisation from iNextPD data for J array' => sub {
         my $key = 'J';
