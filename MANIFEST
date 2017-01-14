@@ -1,5 +1,7 @@
+benchmark/bench.pl
 Changes
 lib/Statistics/Sampler/Multinomial.pm
+lib/Statistics/Sampler/Multinomial/AliasMethod.pm
 Makefile
 Makefile.old
 Makefile.PL
@@ -7,7 +9,7 @@ MANIFEST			This list of files
 MANIFEST.SKIP
 README.md
 t/00-Multinomial.t
-x.html
+t/01-Multinomial-alias-method.t
 xt/07-notabs.t
 xt/boilerplate.t
 xt/perlcritic.t

@@ -10,3 +10,7 @@ xt/.+html
 MYMETA.json
 MYMETA.yml
 MANIFEST.bak
+
+.html
+
+tar.gz$
