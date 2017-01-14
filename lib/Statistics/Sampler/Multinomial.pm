@@ -118,6 +118,7 @@ sub draw_n_samples {
         }
 
         my $res = $prng->binomial (
+            #  MRMA does not like p>1
             min (1, $data->[$kk] / ($norm - $sum_p)),
             ($n - $sum_n),
         );
