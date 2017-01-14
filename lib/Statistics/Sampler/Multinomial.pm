@@ -1,4 +1,4 @@
-package Statistics::Sampler::Multinomial::AliasMethod;
+package Statistics::Sampler::Multinomial;
 
 use 5.010;
 use warnings;
@@ -12,62 +12,35 @@ use List::Util qw /min sum/;
 use List::MoreUtils qw /first_index/;
 use Scalar::Util qw /blessed/;
 
-use parent qw /Statistics::Sampler::Multinomial/;
-
 sub new {
     my ($class, %args) = @_;
     
-    my $data = $args{data};
-    croak 'data argument not passed'
-      if !defined $data;
-    croak 'data argument is not an array ref'
-      if !is_arrayref ($data);
-
-    my $first_neg_idx = first_index {$_ < 0} @$data;
-    croak "negative values passed in data array"
-      if $first_neg_idx >= 0;
-    
-
-    my $self = {
-        data => $data,
-        data_sum_to_one => $args{data_sum_to_one},
-    };
-
-    bless $self, $class;
-    
     my $prng = $args{prng};
-    $self->validate_prng_object ($prng);
-    $self->{prng}
-      =  $prng
-      // "${class}::DefaultPRNG"->new;
+
+    #  Math::Random::MT::Auto has boolean op overloading
+    #  so make sure we don't trigger it or our tests fail
+    #  (and we waste a random number, but that's less of an issue)
+    if (defined $prng) {
+        croak 'prng arg is not an object'
+          if not blessed $prng;
+        croak 'prng arg does not have rand() method'
+          if not $prng->can('rand');
+    }
+
+    $prng //= Statistics::Sampler::Multinomial::DefaultPRNG->new;
+
+    my $self = bless {prng => $prng}, $class;
 
     return $self;
 }
 
-sub validate_prng_object {
-    my ($self, $prng) = @_;
-
-    #  Math::Random::MT::Auto has boolean op overloading
-    #  so make sure we don't trigger it or our tests fail
-    #  i.e. don't use "if $prng" directly
-    #  (and we waste a random number, but that's less of an issue)
-    return 1 if !defined $prng;
-
-    croak 'prng arg is not an object'
-      if not blessed $prng;
-    croak 'prng arg does not have rand() method'
-      if not $prng->can('rand');
-
-    return 1;
-}
-
-sub _initialise_alias_tables {
+sub _initialise {
     my ($self, %args) = @_;
 
     my $probs = $self->{data};
 
     #  caller has not promised they sum to 1
-    if (!$self->{data_sum_to_one}) {
+    if (!$self->{data_sum_to_one}) {  
         my $sum = sum (@$probs);
         if ($sum != 1) {
             my @scaled_probs = map {$_ / $sum} @$probs;
@@ -75,116 +48,64 @@ sub _initialise_alias_tables {
         }
     }
 
-    #  algorithm and comments stolen/adapted from
-    #  https://hips.seas.harvard.edu/blog/2013/03/03/the-alias-method-efficient-sampling-with-many-discrete-outcomes/
+    return;
+}
 
-    my (@smaller, @larger);
-    my @J = (0) x scalar @$probs;
-    my @q = (0) x scalar @$probs;
-    my $kk = -1;
-    my $K = scalar @$probs;
-
-    foreach my $prob (@$probs){
-        $kk++;
-        $q[$kk] = $K * $prob;
-        if ($q[$kk] < 1.0) {
-            push @smaller, $kk
-        }
-        else {
-            push @larger, $kk;
-        }
-    }
-    
-    # Loop though and create little binary mixtures that
-    # appropriately allocate the larger outcomes over the
-    # overall uniform mixture.
-    while (scalar @smaller && scalar @larger) {
-        my $small = pop @smaller;
-        my $large = pop @larger;
- 
-        $J[$small] = $large;
-        $q[$large] = ($q[$large] + $q[$small]) - 1;
- 
-        if ($q[$large] < 1.0) {
-            push @smaller, $large;
-        }
-        else {
-            push @larger, $large;
-        }
-    }
-    # handle numeric stability issues
-    # courtesy http://www.keithschwarz.com/darts-dice-coins/
-    while (scalar @larger) {
-        my $g  = shift @larger;
-        $q[$g] = 1;
-    }
-    while (scalar @smaller) {
-        my $l  = shift @smaller;
-        $q[$l] = 1;
-    }
-
-    #  need better names for these,
-    $self->{J} = \@J;
-    $self->{q} = \@q;
-
-    return if !defined wantarray;
-
-    #  should not expose these to the caller
-    my %results = (J => \@J, q => \@q);
-    return wantarray ? %results : \%results;
+sub get_class_count {
+    my $self = shift;
+    my $aref = $self->{data};
+    return scalar @$aref;
 }
 
 sub draw {
     my ($self, $args) = @_;
 
-    my $prng = $self->{prng};
-    
-    my $q  = $self->{q}
-      // do {$self->_initialise_alias_tables; $self->{q}};
-
-    my $J  = $self->{J};
-    my $K  = scalar @$J;
-    my $kk = int ($prng->rand * $K);
- 
-    # Draw from the binary mixture, either keeping the
-    # small one, or choosing the associated larger one.
-    return ($prng->rand < $q->[$kk]) ? $kk : $J->[$kk];
+    #  inefficient, but why would one want a single draw?
+    #  here for compatibility with SSM::AliasMethod
+    return $self->draw_n_samples (1);
 }
 
 sub draw_n_samples {
     my ($self, $n) = @_;
-    
+
     my $prng = $self->{prng};
 
-    my $q  = $self->{q}
-      // do {$self->initialise; $self->{q}};
-    my $J  = $self->{J};
-    my $K  = scalar @$J;
-    
+    my $data  = $self->{data}
+      // croak 'it appears setup has not been run yet';
+    my $K    = scalar @$data;
+    my $norm = $self->{sum} // do {$self->_initialise; $self->{sum}};
+
     my @draws;
-    for (1..$n) {
-        my $kk = int ($prng->rand * $K);
-        # Draw from the binary mixture, either keeping the
-        # small one, or choosing the associated larger one.
-        # {SWL: could try to use Data::Alias or refaliasing here
-        # as the derefs cause overhead, albeit the big overhead
-        # is the method calls}
-        push @draws, ($prng->rand < $q->[$kk]) ? $kk : $J->[$kk];
+    my ($sum_p, $sum_n) = (0, 0);
+
+    foreach my $kk (0..($K-1)) {
+        if (!$data->[$kk]) {
+            $draws[$kk] = 0;
+            next;
+        }
+
+        my $res = $prng->binomial (
+            min (1, $data->[$kk] / ($norm - $sum_p)),
+            ($n - $sum_n),
+        );
+        $draws[$kk] = $res;
+        $sum_p += $data->[$kk];
+        $sum_n += $res;
     }
 
     return \@draws;
 }
 
-#  Cuckoo package to act as a method wrapper
-#  to use the perl PRNG stream by default. 
-package Statistics::Sampler::Multinomial::AliasMethod::DefaultPRNG {
-    sub new {
-        return bless {}, __PACKAGE__;
-    }
-    sub rand {
-        rand();
-    }
-}
+##  Cuckoo package to act as a method wrapper
+##  to use the perl PRNG stream by default. 
+#package Statistics::Sampler::Multinomial::DefaultPRNG {
+#    sub new {
+#        return bless {}, __PACKAGE__;
+#    }
+#    sub rand {
+#        rand();
+#    }
+#}
 
 1;
 __END__
