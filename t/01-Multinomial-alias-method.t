@@ -256,6 +256,14 @@ sub test_draw_real_data {
         }
     };
 
+    #  reset to ensure we call _initialise_alias_tables internally
+    $prng   = Math::Random::MT::Auto->new (seed => 2345);
+    #  need to update expected results if this is removed/commented
+    @waste_three_vals = map {$prng->rand} (0..2);
+    $object = Statistics::Sampler::Multinomial::AliasMethod->new (
+        prng => $prng,
+        data => $probs,
+    );
     my $expected_draws = [
         8, 5, 3, 2, 1, 1, 0, 2, 3, 0, 0, 1, 0, 2, 0, 0,
         1, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
