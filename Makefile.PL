@@ -10,6 +10,7 @@ WriteMakefile(
     PL_FILES            => {},
     PREREQ_PM => {
         'Carp'         => 0,
+        'parent'       => 0,
         'Ref::Util'    => 0,
         'List::Util'   => 0,
         'Scalar::Util' => 0,
