@@ -264,9 +264,11 @@ L<https://github.com/shawnlaffan/perl-statistics-sampler-multinomial/issues>.
 Much of the code has been adapted from a python implementation at
 L<https://hips.seas.harvard.edu/blog/2013/03/03/the-alias-method-efficient-sampling-with-many-discrete-outcomes>.
 
-These packages also have multinomial samplers but do not use the alias method,
-and you cannot supply your own PRNG.  They are also substantially faster...
-L<Math::Random>, L<Math::GSL::Randist>
+L<Statistics::Sampler::Multinomial> is the parent class of this one, and uses the algorithm implemented in the GSL.  
+
+The L<Math::Random> and L<Math::GSL::Randist> packages also have multinomial samplers but do not use the alias method,
+and you cannot supply your own PRNG.  They are also substantially faster so if
+you care not about the method or PRNG stream then perhaps you should use them...
 
 
 =head1 AUTHOR
