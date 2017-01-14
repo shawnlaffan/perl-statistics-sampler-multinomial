@@ -127,7 +127,7 @@ sub draw_n_samples {
     my $prng = $self->{prng};
 
     my $q  = $self->{q}
-      // do {$self->initialise; $self->{q}};
+      // do {$self->_initialise_alias_tables; $self->{q}};
     my $J  = $self->{J};
     my $K  = scalar @$J;
     
