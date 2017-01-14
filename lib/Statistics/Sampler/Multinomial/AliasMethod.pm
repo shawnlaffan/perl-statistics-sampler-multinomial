@@ -1,4 +1,4 @@
-package Statistics::Sampler::Multinomial;
+package Statistics::Sampler::Multinomial::AliasMethod;
 
 use 5.010;
 use warnings;
