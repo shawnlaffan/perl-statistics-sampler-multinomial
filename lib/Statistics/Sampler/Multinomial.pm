@@ -25,27 +25,38 @@ sub new {
     croak "negative values passed in data array"
       if $first_neg_idx >= 0;
     
-    my $prng = $args{prng};
-
-    #  Math::Random::MT::Auto has boolean op overloading
-    #  so make sure we don't trigger it or our tests fail
-    #  (and we waste a random number, but that's less of an issue)
-    if (defined $prng) {
-        croak 'prng arg is not an object'
-          if not blessed $prng;
-        croak 'prng arg does not have rand() method'
-          if not $prng->can('rand');
-    }
-
-    $prng //= Statistics::Sampler::Multinomial::DefaultPRNG->new;
 
     my $self = {
         data => $data,
-        prng => $prng,
         data_sum_to_one => $args{data_sum_to_one},
     };
 
-    return bless $self, $class;
+    bless $self, $class;
+    
+    my $prng = $args{prng};
+    $self->validate_prng_object ($prng);
+    $self->{prng}
+      =  $prng
+      // Statistics::Sampler::Multinomial::DefaultPRNG->new;
+
+    return $self;
+}
+
+sub validate_prng_object {
+    my ($self, $prng) = @_;
+
+    #  Math::Random::MT::Auto has boolean op overloading
+    #  so make sure we don't trigger it or our tests fail
+    #  i.e. don't use "if $prng" directly
+    #  (and we waste a random number, but that's less of an issue)
+    return 1 if !defined $prng;
+
+    croak 'prng arg is not an object'
+      if not blessed $prng;
+    croak 'prng arg does not have rand() method'
+      if not $prng->can('rand');
+
+    return 1;
 }
 
 sub _initialise_alias_tables {
