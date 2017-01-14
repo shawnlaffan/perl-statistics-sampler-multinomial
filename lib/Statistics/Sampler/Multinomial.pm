@@ -183,7 +183,8 @@ This document describes Statistics::Sampler::Multinomial version 0.0_001
 
 =head1 DESCRIPTION
 
-Implements multinomial sampling using the same algorithm as the GSL.
+Implements multinomial sampling using the conditional binomial method
+(the same algorithm as used in the GSL).
 Benchmarking shows it to be faster than the Alias
 method implemented in L<Statistics::Sampler::Multinomial::AliasMethod>,
 presumably because the calls to the PRNG are inside XS and avoid

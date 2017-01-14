@@ -2,7 +2,7 @@
 
 
 Implements multinomial sampling using two methods,
-that implemented in the GSL, and Vose's version of the alias method.
+conditional binomial method, and Vose's version of the alias method.
 
 The setup time for the alias method is longer than for other methods,
 and the memory requirements are larger since it maintains two lists in memory,
