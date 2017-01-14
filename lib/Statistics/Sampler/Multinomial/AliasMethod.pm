@@ -14,37 +14,7 @@ use Scalar::Util qw /blessed/;
 
 use parent qw /Statistics::Sampler::Multinomial/;
 
-sub new {
-    my ($class, %args) = @_;
-    
-    my $data = $args{data};
-    croak 'data argument not passed'
-      if !defined $data;
-    croak 'data argument is not an array ref'
-      if !is_arrayref ($data);
-
-    my $first_neg_idx = first_index {$_ < 0} @$data;
-    croak "negative values passed in data array"
-      if $first_neg_idx >= 0;
-    
-
-    my $self = {
-        data => $data,
-        data_sum_to_one => $args{data_sum_to_one},
-    };
-
-    bless $self, $class;
-    
-    my $prng = $args{prng};
-    $self->validate_prng_object ($prng);
-    $self->{prng}
-      =  $prng
-      // "${class}::DefaultPRNG"->new;
-
-    return $self;
-}
-
-sub validate_prng_object {
+sub _validate_prng_object {
     my ($self, $prng) = @_;
 
     #  Math::Random::MT::Auto has boolean op overloading

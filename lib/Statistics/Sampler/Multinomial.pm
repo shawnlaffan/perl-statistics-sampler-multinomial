@@ -15,24 +15,53 @@ use Scalar::Util qw /blessed/;
 sub new {
     my ($class, %args) = @_;
     
+    my $data = $args{data};
+    croak 'data argument not passed'
+      if !defined $data;
+    croak 'data argument is not an array ref'
+      if !is_arrayref ($data);
+
+    my $first_neg_idx = first_index {$_ < 0} @$data;
+    croak "negative values passed in data array"
+      if $first_neg_idx >= 0;
+    
+
+    my $self = {
+        data => $data,
+        data_sum_to_one => $args{data_sum_to_one},
+    };
+
+    bless $self, $class;
+
     my $prng = $args{prng};
-
-    #  Math::Random::MT::Auto has boolean op overloading
-    #  so make sure we don't trigger it or our tests fail
-    #  (and we waste a random number, but that's less of an issue)
-    if (defined $prng) {
-        croak 'prng arg is not an object'
-          if not blessed $prng;
-        croak 'prng arg does not have rand() method'
-          if not $prng->can('rand');
-    }
-
-    $prng //= Statistics::Sampler::Multinomial::DefaultPRNG->new;
-
-    my $self = bless {prng => $prng}, $class;
+    $self->_validate_prng_object ($prng);
+    $self->{prng}
+      =  $prng
+      // "${class}::DefaultPRNG"->new;
 
     return $self;
 }
+
+sub _validate_prng_object {
+    my ($self, $prng) = @_;
+
+    #  Math::Random::MT::Auto has boolean op overloading
+    #  so make sure we don't trigger it or our tests fail
+    #  i.e. don't use "if $prng" directly
+    #  (and we waste a random number, but that's less of an issue)
+    #return 1 if !defined $prng;
+
+    #  no default yet, so croak if not passed
+    croak 'prng arg is not defined'
+      if not defined $prng;
+    croak 'prng arg is not an object'
+      if not blessed $prng;
+    croak 'prng arg does not have binomial() method'
+      if not $prng->can('binomial');
+
+    return 1;
+}
+
 
 sub _initialise {
     my ($self, %args) = @_;
@@ -46,6 +75,10 @@ sub _initialise {
             my @scaled_probs = map {$_ / $sum} @$probs;
             $probs = \@scaled_probs;
         }
+        $self->{sum} = $sum;
+    }
+    else {
+        $self->{sum} = 1;
     }
 
     return;
@@ -96,16 +129,23 @@ sub draw_n_samples {
     return \@draws;
 }
 
-##  Cuckoo package to act as a method wrapper
-##  to use the perl PRNG stream by default. 
-#package Statistics::Sampler::Multinomial::DefaultPRNG {
-#    sub new {
-#        return bless {}, __PACKAGE__;
-#    }
-#    sub rand {
-#        rand();
-#    }
-#}
+#  Cuckoo package to act as a method wrapper
+#  to use the perl PRNG stream by default.
+# currently croaks because we have no binomial method
+package Statistics::Sampler::Multinomial::DefaultPRNG {
+    use Carp;
+    sub new {
+        croak 'default PRNG not yet implemented for Statistics::Sampler::Multinomial';
+        return bless {}, __PACKAGE__;
+    }
+    #sub rand {
+    #    rand();
+    #}
+    sub binomial {
+        ...
+    }
+}
+
 
 1;
 __END__
