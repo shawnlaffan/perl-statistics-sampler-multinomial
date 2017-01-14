@@ -171,10 +171,11 @@ This document describes Statistics::Sampler::Multinomial version 0.0_001
 
 =head1 SYNOPSIS
 
-    use Statistics::Sampler::Multinomial;
+    use Statistics::Sampler::Multinomial::AliasMethod;
 
-    my $object = Statistics::Sampler::Multinomial->new();
-    $object->initialise (data => [0.1, 0.3, 0.2, 0.4]);
+    my $object = Statistics::Sampler::Multinomial::AliasMethod->new(
+        data => [0.1, 0.3, 0.2, 0.4],
+    );
     $object->draw;
     #  returns a number between 0..3
     my $samples = $object->draw_n_samples(5)
@@ -183,7 +184,10 @@ This document describes Statistics::Sampler::Multinomial version 0.0_001
     
     # to specify your own PRNG object, in this case the Mersenne Twister
     my $mrma = Math::Random::MT::Auto->new;
-    my $object = Statistics::Sampler::Multinomial->new(prng => $mrma);
+    my $object = Statistics::Sampler::Multinomial::AliasMethod->new(
+        data => [1,2,4,6,200],
+        prng => $mrma,
+    );
 
 
 =head1 DESCRIPTION
@@ -195,9 +199,11 @@ and the memory requirements are larger since it maintains two lists in memory,
 but this is amortised when 
 when generating repeated samples because only two random numbers are
 needed for each draw, as compared to up to O(log n) for other methods.
-This has a pay off when, for example calculating 
-bootstrap confidence intervals for a set of classes.
-(This statement could do with some more thorough testing).
+This should have a pay off when, for example calculating 
+bootstrap confidence intervals for a set of classes,
+but benchmarking shows this implementation to not be faster
+than the GSL approach.
+Profiling suggests the method calls to rand() are the main bottleneck.
 
 For more details and background, see L<http://www.keithschwarz.com/darts-dice-coins>.
 
@@ -206,9 +212,11 @@ For more details and background, see L<http://www.keithschwarz.com/darts-dice-co
 
 =over 4
 
-=item my $object = Statistics::Sampler::Multinomial->new()
+=item my $object = Statistics::Sampler::Multinomial->new(data => [1,2,3,4,100])
 
-=item my $object = Statistics::Sampler::Multinomial->new (prng => $prng)
+=item my $object = Statistics::Sampler::Multinomial->new(data => [0.1, 0.4, 0.5], data_sum_to_one => 1)
+
+=item my $object = Statistics::Sampler::Multinomial->new (data => [1,2,3,4,5,100], prng => $prng)
 
 Creates a new object, optionally passing a PRNG object to be used.
 If no PRNG object is passed then it defaults to an internal object
@@ -220,12 +228,6 @@ The only requirement of such an object is that it has a rand()
 method that returns a value in the interval [0,1)
 (the same as Perl's rand() builtin).
 
-=item $object->initialise (data => [1, 4, 5])
-
-=item $object->initialise (data => [0.1, 0.4, 0.5], data_sum_to_one => 1)
-
-Initialise the alias tables given an array of proportions
-for a set of K classes (each class corresponds with an array entry).
 
 By default it will standardise the data to sum to one
 but callers can skip this step by promising that the
@@ -237,16 +239,12 @@ such promises are made, so expect failures for lying.
 Draw one sample from the distribution.
 Returns the chosen class number.
 
-Croaks if called before initialise has been called.
-
 =item $object->draw_n_samples ($n)
 
 Returns an array ref of $n samples.  Each array entry
 is the value of a randomly selected class number.
 e.g. for $n=3 and the K=5 example from above,
 one could get (0,2,1,0,0).
-
-Croaks if called before initialise has been called.
 
 =item $object->get_class_count
 
@@ -267,7 +265,7 @@ Much of the code has been adapted from a python implementation at
 L<https://hips.seas.harvard.edu/blog/2013/03/03/the-alias-method-efficient-sampling-with-many-discrete-outcomes>.
 
 These packages also have multinomial samplers but do not use the alias method,
-and you cannot supply your own PRNG:
+and you cannot supply your own PRNG.  They are also substantially faster...
 L<Math::Random>, L<Math::GSL::Randist>
 
 
