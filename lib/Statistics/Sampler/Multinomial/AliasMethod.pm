@@ -4,7 +4,7 @@ use 5.010;
 use warnings;
 use strict;
 
-our $VERSION = '0.0_001';
+our $VERSION = '0.01';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
@@ -167,7 +167,7 @@ Statistics::Sampler::Multinomial - Generate multinomial samples using Vose's ali
 
 =head1 VERSION
 
-This document describes Statistics::Sampler::Multinomial version 0.0_001
+This document describes Statistics::Sampler::Multinomial version 0.01
 
 
 =head1 SYNOPSIS

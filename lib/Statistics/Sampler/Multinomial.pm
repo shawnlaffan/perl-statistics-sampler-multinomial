@@ -153,12 +153,13 @@ __END__
 
 =head1 NAME
 
-Statistics::Sampler::Multinomial - Generate multinomial samples using Vose's alias method
+Statistics::Sampler::Multinomial - Generate multinomial samples using the
+conditional conditional binomial method.
 
 
 =head1 VERSION
 
-This document describes Statistics::Sampler::Multinomial version 0.0_001
+This document describes Statistics::Sampler::Multinomial version 0.1
 
 
 =head1 SYNOPSIS
