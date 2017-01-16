@@ -74,4 +74,7 @@ They are pretty similar.
 
 Chi squared results fall inside the 5-95% confidence intervals
 for both methods.
+e.g. for df=49:
+SSM  chisq = 58.0875966700564
+SSMA chisq = 41.4898144299499
 
