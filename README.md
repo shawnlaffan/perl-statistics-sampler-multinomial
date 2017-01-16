@@ -14,7 +14,7 @@ This should have a pay off when, for example calculating
 bootstrap confidence intervals for a set of classes.
 
 However, benchmarking indicates that the conditional binomial code is
-substantially (four times) faster than the alias method code
+substantially (approximately four times) faster than the alias method code
 when using the Mersenne Twister implemented in Math::Random::MT::Auto.
 Profiling using Devel::NYTProf indicates this is probably due to
 Perl level overheads for the PRNG method calls in the Alias code.
@@ -28,7 +28,8 @@ then you should consider using that.
 The Math::Random implementation is also faster than this module,
 but not as fast as the GSL.
 
-So why would you use this module?  The main reason is that it allows you to pass your own
+So if it is not faster, then why would you use this module?
+The main reason is that it allows you to pass your own
 PRNG object, and thus you can continue sampling from an existing PRNG stream
 within your analysis using the PRNG of your choice.
 This simplifies reproducibility of results as one only
