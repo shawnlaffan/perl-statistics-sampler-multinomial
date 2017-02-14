@@ -1,12 +1,13 @@
 use strict;
 use warnings;
-use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker 6.48;
 
 WriteMakefile(
     NAME                => 'Statistics::Sampler::Multinomial',
     AUTHOR              => 'Shawn Laffan <shawnlaffan@gmail.com>',
     VERSION_FROM        => 'lib/Statistics/Sampler/Multinomial.pm',
     ABSTRACT_FROM       => 'lib/Statistics/Sampler/Multinomial.pm',
+    MIN_PERL_VERSION    => '5.014',
     PL_FILES            => {},
     PREREQ_PM => {
         'Carp'         => 0,

@@ -1,5 +1,8 @@
 Revision history for Statistics-Sampler-Multinomial
 
+0.3_002
+  - Set minimum perl version to 5.014
+
 0.3_001
   - See if we can get more insight into cpan testers fails
   - Add explicit return to cuckoo packages

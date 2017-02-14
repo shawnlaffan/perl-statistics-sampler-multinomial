@@ -1,10 +1,10 @@
 package Statistics::Sampler::Multinomial;
 
-use 5.010;
+use 5.014;
 use warnings;
 use strict;
 
-our $VERSION = '0.3_001';
+our $VERSION = '0.3_002';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
