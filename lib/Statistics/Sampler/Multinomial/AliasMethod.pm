@@ -165,11 +165,6 @@ __END__
 Statistics::Sampler::Multinomial - Generate multinomial samples using Vose's alias method
 
 
-=head1 VERSION
-
-This document describes Statistics::Sampler::Multinomial version 0.01
-
-
 =head1 SYNOPSIS
 
     use Statistics::Sampler::Multinomial::AliasMethod;
