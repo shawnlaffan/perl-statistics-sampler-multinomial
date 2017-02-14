@@ -1,5 +1,9 @@
 Revision history for Statistics-Sampler-Multinomial
 
+0.3_001
+  - See if we can get more insight into cpan testers fails
+  - Add explicit return to cuckoo packages
+
 0.2  20170214
   - Fix typo in abstract
   - No functional changes
