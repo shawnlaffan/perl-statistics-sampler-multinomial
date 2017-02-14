@@ -1,5 +1,9 @@
 Revision history for Statistics-Sampler-Multinomial
 
+0.2  20170214
+  - Fix typo in abstract
+  - No functional changes
+
 0.1  20170214
-       Initial release.
+  - Initial release.
 
