@@ -4,7 +4,7 @@ use 5.010;
 use warnings;
 use strict;
 
-our $VERSION = '0.03';
+our $VERSION = '0.03_001';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
@@ -155,6 +155,7 @@ package Statistics::Sampler::Multinomial::AliasMethod::DefaultPRNG {
     sub rand {
         rand();
     }
+    1;
 }
 
 1;
