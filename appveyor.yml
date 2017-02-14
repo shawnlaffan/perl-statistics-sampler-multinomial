@@ -3,19 +3,19 @@ branches:
     - /travis/
 skip_tags: true
 
-#cache:
-#  - C:\strawberry
-
+cache:
+  - C:\strawberry
 
 install:
-#  - if not exist "C:\strawberry" cinst strawberryperl
-#  - set PATH=C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
+  - if not exist "C:\strawberry" choco install strawberryperl --version 5.24.1.1
+  - set ST=C:\strawberry
+  - set PATH=%ST%\perl\bin;%ST%\perl\site\bin;%ST%\c\bin;%PATH%
   - mkdir %APPVEYOR_BUILD_FOLDER%\tmp
   - set TMPDIR=%APPVEYOR_BUILD_FOLDER%\tmp
   - perl -V
-  - cpan App::cpanminus
-  - cpanm -q --showdeps --with-develop --with-suggests . | findstr /v "^perl\>" | cpanm -n
-  - 'echo End install at: & time /t'
+  #- cpan App::cpanminus
+  - cpanm -q --notest --showdeps --with-develop --with-suggests . | findstr /v "^perl\>" | cpanm -n
+  #- 'echo End install at: & time /t'
 
 
 build_script:
