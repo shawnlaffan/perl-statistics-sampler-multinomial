@@ -41,6 +41,27 @@ sub main {
 }
 
 
+sub is_numeric_within_tolerance_or_exact_text {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my %args = @_;
+    my ($got, $expected) = @args{qw /got expected/};
+
+    if (looks_like_number ($expected) && looks_like_number ($got)) {
+        my $result = ($args{tolerance} // 1e-10) > abs ($expected - $got);
+        if (!$result) {
+            #  sometimes we get diffs above the default due to floating point issues
+            #  even when the two numbers are identical but only have 9dp
+            $result = $expected eq $got;
+        }
+        ok ($result, $args{message});
+    }
+    else {
+        is ($got, $expected, $args{message});
+    }
+}
+
+
 sub test_croakers {
     my $prng = Math::Random::MT::Auto->new;
     my ($result, $e, $object);

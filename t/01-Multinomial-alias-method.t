@@ -8,6 +8,7 @@ use Test::Most;
 use Statistics::Sampler::Multinomial::AliasMethod;
 use Math::Random::MT::Auto;
 use List::Util qw /sum/;
+use Scalar::Util qw /looks_like_number/;
 
 use Devel::Symdump;
 my $functions_object = Devel::Symdump->rnew(__PACKAGE__); 
@@ -40,6 +41,26 @@ sub main {
     return 0;
 }
 
+
+sub is_numeric_within_tolerance_or_exact_text {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my %args = @_;
+    my ($got, $expected) = @args{qw /got expected/};
+
+    if (looks_like_number ($expected) && looks_like_number ($got)) {
+        my $result = ($args{tolerance} // 1e-10) > abs ($expected - $got);
+        if (!$result) {
+            #  sometimes we get diffs above the default due to floating point issues
+            #  even when the two numbers are identical but only have 9dp
+            $result = $expected eq $got;
+        }
+        ok ($result, $args{message});
+    }
+    else {
+        is ($got, $expected, $args{message});
+    }
+}
 
 sub test_croakers {
     my $prng = Math::Random::MT::Auto->new;
@@ -245,14 +266,20 @@ sub test_draw_real_data {
             is ($got, $exp, "result->{$key}[$i] matches");
         }
     };
-    
-    my $precision = "%.6f";  #  we get precision effects with these data
-    subtest "got expected initialisation from iNextPD data for q array at precision $precision" => sub {
+
+
+    my $tolerance = 1E-7;  #  we get precision effects with these data
+    subtest "got expected initialisation from iNextPD data for q array at tolerance $tolerance" => sub {
         my $key = 'q';
         for my $i (0 .. $#$probs) {
-            my $got = sprintf ($precision, $result{$key}[$i]);
-            my $exp = sprintf ($precision, $expected->{$key}[$i]);
-            is ($got, $exp, "result->{$key}[$i] matches at precision $precision");
+            my $got = $result{$key}[$i];
+            my $exp = $expected->{$key}[$i];
+            is_numeric_within_tolerance_or_exact_text (
+                got       => $got,
+                expected  => $exp,
+                tolerance => $tolerance,
+                message   => "result{$key}[$i] is within tolerance $tolerance ($got vs $exp)"
+            );
         }
     };
 
