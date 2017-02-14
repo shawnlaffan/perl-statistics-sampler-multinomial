@@ -4,7 +4,7 @@ use 5.010;
 use warnings;
 use strict;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
@@ -155,8 +155,8 @@ __END__
 
 =head1 NAME
 
-Statistics::Sampler::Multinomial - Generate multinomial samples using the
-conditional conditional binomial method.
+Statistics::Sampler::Multinomial - Generate multinomial samples
+using the conditional binomial method.
 
 
 =head1 VERSION
