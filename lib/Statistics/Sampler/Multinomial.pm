@@ -52,7 +52,8 @@ sub _validate_prng_object {
     #return 1 if !defined $prng;
 
     #  no default yet, so croak if not passed
-    croak 'prng arg is not defined'
+    croak "prng arg is not defined.  "
+        . "Math::Random::MT::Auto is a good default to use"
       if not defined $prng;
     croak 'prng arg is not an object'
       if not blessed $prng;
@@ -69,16 +70,16 @@ sub _initialise {
     my $probs = $self->{data};
 
     #  caller has not promised they sum to 1
-    if (!$self->{data_sum_to_one}) {  
+    if ( $self->{data_sum_to_one}) {
+        $self->{sum} = 1;
+    }
+    else {  
         my $sum = sum (@$probs);
         if ($sum != 1) {
             my @scaled_probs = map {$_ / $sum} @$probs;
             $probs = \@scaled_probs;
         }
         $self->{sum} = $sum;
-    }
-    else {
-        $self->{sum} = 1;
     }
 
     return;
@@ -136,7 +137,8 @@ sub draw_n_samples {
 package Statistics::Sampler::Multinomial::DefaultPRNG {
     use Carp;
     sub new {
-        croak 'default PRNG not yet implemented for Statistics::Sampler::Multinomial';
+        croak "No default PRNG yet implemented for Statistics::Sampler::Multinomial.\n"
+            . "Try Math::Random::MT::Auto.";
         return bless {}, __PACKAGE__;
     }
     #sub rand {

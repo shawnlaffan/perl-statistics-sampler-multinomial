@@ -15,12 +15,12 @@ WriteMakefile(
         'List::Util'   => 0,
         'Scalar::Util' => 0,
         'List::MoreUtils' => 0,
+        'Math::Random::MT::Auto' => 0,
     },
     TEST_REQUIRES => {
         'Test::More' => 0,
         'Test::Most' => 0,
         'rlib'       => 0,
-        'Math::Random::MT::Auto' => 0,
         'Devel::Symdump' => 0,
     },
     META_MERGE => {
