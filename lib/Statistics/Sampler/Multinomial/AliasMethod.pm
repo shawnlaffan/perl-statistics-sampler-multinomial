@@ -179,6 +179,7 @@ This document describes Statistics::Sampler::Multinomial version 0.01
     );
     $object->draw;
     #  returns a number between 0..3
+    
     my $samples = $object->draw_n_samples(5)
     #  returns an array ref that might look something like
     #  [3,3,0,2,0]

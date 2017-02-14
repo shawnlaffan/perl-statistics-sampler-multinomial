@@ -173,6 +173,7 @@ This document describes Statistics::Sampler::Multinomial version 0.1
     );
     $object->draw;
     #  returns a number between 0..3
+
     my $samples = $object->draw_n_samples(5)
     #  returns an array ref that might look something like
     #  [3,3,0,2,0]
@@ -203,9 +204,9 @@ see L<http://www.keithschwarz.com/darts-dice-coins>.
 
 =over 4
 
-=item my $object = Statistics::Sampler::Multinomial->new()
+=item my $object = Statistics::Sampler::Multinomial->new(data => [0.1, 0.4, 0.5], data_sum_to_one => 1)
 
-=item my $object = Statistics::Sampler::Multinomial->new (prng => $prng)
+=item my $object = Statistics::Sampler::Multinomial->new (data => [1,2,3,4,5,100], prng => $prng)
 
 Creates a new object, optionally passing a PRNG object to be used.
 
