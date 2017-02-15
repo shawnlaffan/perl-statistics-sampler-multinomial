@@ -16,5 +16,6 @@ MANIFEST.bak
 tar.gz$
 
 ^Makefile$
+^Makefile.old
 
 ^cover_db
