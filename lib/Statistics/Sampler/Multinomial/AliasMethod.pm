@@ -255,6 +255,13 @@ or zero if initialise has not yet been run.
 
 =head1 BUGS AND LIMITATIONS
 
+Note that the results will differ between standard double
+and long double builds of Perl.
+
+L<Math::Random::MT::Auto> (a useful PRNG package) also gives different results
+between x32 and x64 architectures.  
+
+
 Please report any bugs or feature requests to
 L<https://github.com/shawnlaffan/perl-statistics-sampler-multinomial/issues>.
 
