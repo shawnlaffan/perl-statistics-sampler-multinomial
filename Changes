@@ -1,7 +1,7 @@
 Revision history for Statistics-Sampler-Multinomial
 
 0.3_004
-  - Diagnostic feedback for failures on long double builds
+  - Skip some tests on long double builds
 
 0.3_003
   - Shift to a tolerance based test (avoid sprintf)
