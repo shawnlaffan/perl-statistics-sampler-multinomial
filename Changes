@@ -1,5 +1,11 @@
 Revision history for Statistics-Sampler-Multinomial
 
+0.3_004
+  - Diagnostic feedback for failures on long double builds
+
+0.3_003
+  - Shift to a tolerance based test (avoid sprintf)
+
 0.3_002
   - Set minimum perl version to 5.014
 

@@ -135,7 +135,8 @@ sub test_prob_generation {
         q => [0.4, 0.6, 1, 1],
     };
 
-    is_deeply (\%result, $expected, 'got expected J and q for 2,3,5,10');
+    is_deeply (\%result, $expected, 'got expected J and q for 2,3,5,10')
+      or diag 'J:' . join (',', @{$result{J}}) . 'q: ' . join (',', @{$result{q}});
 
     @probs = (1..9);
     $object = Statistics::Sampler::Multinomial::AliasMethod->new (
