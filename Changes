@@ -2,7 +2,7 @@ Revision history for Statistics-Sampler-Multinomial
 
 0.4 20170216
   - No functional changes from the 0.3_00x dev releases
-  - Document that ALis method results will differ between
+  - Document that Alias method results will differ between
     double and long double builds
 
 0.3_004 20170214
