@@ -7,10 +7,9 @@ use English qw /-no_match_vars/;
 use Config;
 
 use rlib;
-use Test::Most;
-plan skip_all => 'PRNG sequence used in tests is only valid for x64'
-  if $Config{archname} =~ /x86/
-    and not $Config{archname} =~ '-ld$';
+use Test::Most tests => 19;
+plan skip_all => 'PRNG sequence used in tests is only valid for 64 bit ints'
+  if $Config{ivsize} == 4;
 
 use Statistics::Sampler::Multinomial::AliasMethod;
 use Math::Random::MT::Auto;
@@ -129,7 +128,8 @@ sub test_croakers {
 sub test_prob_generation {
     SKIP: {
         skip 'expected values for these tests are not valid on x86 or long double builds', 2
-          if $Config{archname} =~ /x86|-ld$/;  #  bodgy
+          if $Config{ivsize} == 4
+            or $Config{archname} =~ /-ld$/;  #  clunky?
 
         my $prng = Math::Random::MT::Auto->new;
         my @probs = (2, 3, 5, 10);

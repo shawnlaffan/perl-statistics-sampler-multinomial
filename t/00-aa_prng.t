@@ -7,7 +7,7 @@ use 5.010;
 use English qw /-no_match_vars/;
 
 use rlib;
-use Test::Most;
+use Test::Most tests => 1;
 use Math::Random::MT::Auto;
 
 my $prng = Math::Random::MT::Auto->new(seed => 2345);
@@ -34,9 +34,8 @@ my @expected = split "\n", $exp_str;
 
 SKIP: {
     use Config;
-    skip 'PRNG sequence is for x64 or long int', 1
-      if $Config{archname} =~ /x86/
-      and not $Config{archname} =~ '-ld$';
+    skip 'PRNG sequence is for 64 bit ints', 1
+      if $Config{ivsize} == 4;
     is_deeply (\@rand_vals, \@expected, 'got expected PRNG sequence');
 }
 

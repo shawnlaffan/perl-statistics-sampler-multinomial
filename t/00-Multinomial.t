@@ -3,8 +3,10 @@ use warnings;
 use 5.010;
 use English qw /-no_match_vars/;
 
+use Test::Most tests => 9;
+
+
 use rlib;
-use Test::Most;
 use Statistics::Sampler::Multinomial;
 use Math::Random::MT::Auto;
 use List::Util qw /sum/;
@@ -148,9 +150,8 @@ sub test_draw_real_data {
 
     SKIP: {
         use Config;
-        skip 'prng sequence differs under x86', 2
-          if $Config{archname} =~ /x86/
-            and not $Config{archname} =~ '-ld$';
+        skip 'prng sequence differs under 32 bit ints', 2
+          if $Config{ivsize} == 4;
         is_deeply $draws, $expected_draws, 'got expected draws for iNextPD data';
         is (sum (@$draws), scalar @$probs, 'got expected number of draws for iNextPD ')
     }

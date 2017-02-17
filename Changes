@@ -1,5 +1,10 @@
 Revision history for Statistics-Sampler-Multinomial
 
+0.6 20170218
+  - Test changes only
+  - Check $Config{ivsize} to determine if we should skip.
+    The archname tests missed too many cases.
+
 0.5 20170217
   - Skip most tests on x86 architectures, as Math::Random::MT::Auto
     generates different PRNG streams for a given seed compared with x64
