@@ -3,8 +3,14 @@ use warnings;
 use 5.010;
 use English qw /-no_match_vars/;
 
+
+use Config;
+
 use rlib;
 use Test::Most;
+plan skip_all => 'PRNG sequence used in tests is only valid for x64'
+  if $Config{archname} =~ /x86/;
+
 use Statistics::Sampler::Multinomial::AliasMethod;
 use Math::Random::MT::Auto;
 use List::Util qw /sum/;
@@ -121,9 +127,8 @@ sub test_croakers {
 
 sub test_prob_generation {
     SKIP: {
-        use Config;
-        skip 'expected values for these tests are not valid on long double builds', 2
-          if $Config{archname} =~ /-ld$/;  #  bodgy
+        skip 'expected values for these tests are not valid on x86 or long double builds', 2
+          if $Config{archname} =~ /x86|-ld$/;  #  bodgy
 
         my $prng = Math::Random::MT::Auto->new;
         my @probs = (2, 3, 5, 10);

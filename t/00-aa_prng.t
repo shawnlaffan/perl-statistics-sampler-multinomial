@@ -32,7 +32,11 @@ END_RAND_VALS
 
 my @expected = split "\n", $exp_str;
 
-is_deeply (\@rand_vals, \@expected, 'got expected PRNG sequence');
-
+SKIP: {
+    use Config;
+    skip 'PRNG sequence is for x64 or long int', 1
+      if $Config{archname} =~ /x86/;
+    is_deeply (\@rand_vals, \@expected, 'got expected PRNG sequence');
+}
 
 done_testing();
