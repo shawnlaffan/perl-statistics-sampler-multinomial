@@ -1,5 +1,10 @@
 Revision history for Statistics-Sampler-Multinomial
 
+0.5 20170217
+  - Skip most tests on x86 architectures, as Math::Random::MT::Auto
+    generates different PRNG streams for a given seed compared with x64
+    (unless it is an x86 long int build).
+
 0.4 20170216
   - No functional changes from the 0.3_00x dev releases
   - Document that Alias method results will differ between

@@ -149,7 +149,8 @@ sub test_draw_real_data {
     SKIP: {
         use Config;
         skip 'prng sequence differs under x86', 2
-          if $Config{archname} =~ /x86/;
+          if $Config{archname} =~ /x86/
+            and not $Config{archname} =~ '-ld$';
         is_deeply $draws, $expected_draws, 'got expected draws for iNextPD data';
         is (sum (@$draws), scalar @$probs, 'got expected number of draws for iNextPD ')
     }

@@ -9,7 +9,8 @@ use Config;
 use rlib;
 use Test::Most;
 plan skip_all => 'PRNG sequence used in tests is only valid for x64'
-  if $Config{archname} =~ /x86/;
+  if $Config{archname} =~ /x86/
+    and not $Config{archname} =~ '-ld$';
 
 use Statistics::Sampler::Multinomial::AliasMethod;
 use Math::Random::MT::Auto;

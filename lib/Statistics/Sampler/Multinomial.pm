@@ -4,7 +4,7 @@ use 5.014;
 use warnings;
 use strict;
 
-our $VERSION = '0.4';
+our $VERSION = '0.5';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
@@ -243,6 +243,10 @@ or zero if initialise has not yet been run.
 
 Please report any bugs or feature requests to
 L<https://github.com/shawnlaffan/perl-statistics-sampler-multinomial/issues>.
+
+Most tests are skipped on x86 as Math::Random::MT::Auto seeds differently
+and thus the PRNG sequences differ between x86 and x64.
+
 
 =head1 SEE ALSO
 
