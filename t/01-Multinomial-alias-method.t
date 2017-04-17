@@ -7,9 +7,15 @@ use English qw /-no_match_vars/;
 use Config;
 
 use rlib;
-use Test::Most tests => 19;
-plan skip_all => 'PRNG sequence used in tests is only valid for 64 bit ints'
-  if $Config{ivsize} == 4;
+#use Test::Most tests => 19;
+use Test::Most;
+if ($Config{ivsize} == 4) {
+    plan skip_all
+      => 'PRNG sequence used in tests is only valid for 64 bit ints';
+}
+#else {
+#    plan tests => 19;
+#}
 
 use Statistics::Sampler::Multinomial::AliasMethod;
 use Math::Random::MT::Auto;

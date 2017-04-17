@@ -1,5 +1,9 @@
 Revision history for Statistics-Sampler-Multinomial
 
+0.7 20170219
+  - See if we can avoid more test failures on some systems,
+    this time due to planning twice errors.
+
 0.6 20170218
   - Test changes only
   - Check $Config{ivsize} to determine if we should skip.
