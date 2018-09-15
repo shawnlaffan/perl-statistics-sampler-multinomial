@@ -1,5 +1,8 @@
 Revision history for Statistics-Sampler-Multinomial
 
+0.8 20180915
+  - micro-optimisation in S::S::M::draw_n_samples
+
 0.7 20170219
   - See if we can avoid more test failures on some systems,
     this time due to planning twice errors.

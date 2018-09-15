@@ -4,7 +4,7 @@ use 5.014;
 use warnings;
 use strict;
 
-our $VERSION = '0.7';
+our $VERSION = '0.8';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
@@ -122,9 +122,12 @@ sub draw_n_samples {
             next;
         }
 
+        my $prob = $data_kk / ($norm - $sum_p);
+        #  MRMA does not like p>1
+        # so if p>1 then we get 1, otherwise the original value
+        # the int-or approach is ~10% faster than min(1,$prob) when $prob<1
         my $res = $prng->binomial (
-            #  MRMA does not like p>1
-            min (1, $data_kk / ($norm - $sum_p)),
+            int ($prob) || $prob,
             ($n - $sum_n),
         );
         $draws[$kk] = $res;
