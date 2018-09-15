@@ -1,6 +1,9 @@
 Revision history for Statistics-Sampler-Multinomial
 
 0.81 20180915
+  - add license meta, thanks MANWAR
+
+0.81 20180915
   - use same version across pm files
 
 0.8 20180915
