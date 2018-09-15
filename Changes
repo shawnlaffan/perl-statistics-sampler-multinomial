@@ -1,5 +1,8 @@
 Revision history for Statistics-Sampler-Multinomial
 
+0.81 20180915
+  - use same version across pm files
+
 0.8 20180915
   - micro-optimisation in S::S::M::draw_n_samples
 
