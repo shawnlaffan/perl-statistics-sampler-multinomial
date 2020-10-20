@@ -350,6 +350,7 @@ regarding non-numeric values under the warnings pragma.
 The same applies for floating point array indices.
 
 =item $object->draw_with_mask ($aref)
+
 =item $object->draw_n_samples_with_mask ($n, $aref)
 
 These locally mask out a subset of classes by setting
