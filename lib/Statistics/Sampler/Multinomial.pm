@@ -111,7 +111,7 @@ sub draw {
         next if !$data_kk;
 
         return $kk
-          if   ($data_kk > $norm)  #  if prob>1 due to rounding errors
+          if   ($data_kk > $norm)  #  MRMA blows up if prob>1, due to rounding errors
             || $prng->binomial (
                   $data_kk / $norm,
                   1,  # constant for single draw 
