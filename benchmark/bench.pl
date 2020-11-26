@@ -2,12 +2,15 @@ use 5.010;
 use strict;
 use warnings;
 
+
 BEGIN {
-    #  windows hackery to run in komodo without changing the perl and other things
-    my $sep = ';';
-    my @paths = ('\berrybrew\5.24.0_64_PDL\c\bin');
-    $ENV{PATH} = join $sep, @paths, $ENV{PATH};
+    if ($^O eq 'MSWin32') {
+        use Path::Tiny qw /path/;
+        use Env qw /@PATH/;
+        push @PATH, path($^X)->parent->parent->parent->child ('c/bin')->stringify;
+    }
 }
+
 
 my $iters = 200;
 
@@ -21,7 +24,7 @@ use Math::Random qw/random_multinomial/;
 use Math::GSL::Randist qw /gsl_ran_multinomial/;
 use Math::GSL::RNG qw /gsl_rng_uniform $gsl_rng_mt19937/;
 use Math::Random::MT::Auto;
-use Math::Random::MTwist;
+#use Math::Random::MTwist;
 
 srand(2345);
 my $boss_prng = Math::Random::MT::Auto->new (seed => 2345);
@@ -67,7 +70,7 @@ foreach my $K (10) {
         {
             #  all get the same number of args
             randist => sub {randist($gsl_rng, $N, $scaled_data)},
-            SSMA    => sub {SSMA_draw($SSMa, $N, $scaled_data)},  
+            #SSMA    => sub {SSMA_draw($SSMa, $N, $scaled_data)},  
             SSM     => sub {SSM_draw($SSM, $N, $scaled_data)},
             math_random => sub {math_random(undef, $N, $scaled_data)},
         }
