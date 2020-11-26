@@ -4,7 +4,7 @@ use 5.014;
 use warnings;
 use strict;
 
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
@@ -102,22 +102,73 @@ sub draw {
 
     my $data  = $self->{data}
       // croak 'it appears setup has not been run yet';
-    my $K    = scalar @$data - 1;
-    my $norm = $self->{sum} // do {$self->_initialise; $self->{sum}};
 
-    foreach my $kk (0..$K) {
-        #  avoid repeated derefs below - unbenchmarked micro-optimisation
-        my $data_kk = $data->[$kk];
+    my $norm = $self->{sum}
+      // do {$self->_initialise; $self->{sum}};
+
+    my $kk = -1;
+    foreach my $data_kk (@$data) {
+        $kk++;
         next if !$data_kk;
 
         return $kk
-          if   ($data_kk > $norm)  #  MRMA blows up if prob>1, due to rounding errors
-            || $prng->binomial (
-                  $data_kk / $norm,
-                  1,  # constant for single draw 
-               );
+          if $prng->rand < ($data_kk / $norm);
 
         $norm -= $data_kk;
+    }
+
+    #  we should not get here
+    return;
+}
+
+#  Simplified version of draw
+#  that minimises calls to the PRNG.
+#  Profiling indicated this was a major bottleneck,
+#  at least with MRMA.  
+#  The use of a linear scan is not optimal,
+#  but maintaining a sorted index for binary search
+#  leads to overheads when the list is changed.
+#  Could try a red-black tree or similar...
+sub draw1 {
+    my ($self) = @_;
+
+    my $prng = $self->{prng};
+
+    my $data  = $self->{data}
+      // croak 'it appears setup has not been run yet';
+
+    my $norm = $self->{sum}
+      // do {$self->_initialise; $self->{sum}};
+
+    my $rand = $prng->rand;
+    
+    if ($rand < 0.5) {
+        $rand = $rand * $norm;
+        my $cumsum; # = $data->[0];
+        my $kk = -1;  #  start one before the start
+        foreach my $data_kk (@$data) {
+            $kk++;
+            next if !$data_kk;
+            $cumsum += $data_kk;
+
+            return $kk
+              if $rand <= $cumsum;
+        }
+    }
+    else {
+        #  work from the end
+        $rand = (1 - $rand) * $norm;
+        my $cumsum = $data->[-1];
+        my $kk = scalar @$data;  # start one beyond the end
+        foreach my $data_kk (reverse @$data) {
+            $kk--;
+            next if !$data_kk;
+
+            return $kk
+              if $rand < $cumsum;
+
+            $cumsum += $data_kk;
+        }
     }
 
     #  we should not get here
@@ -322,6 +373,18 @@ method.
 
 Draw one sample from the distribution.
 Returns the sampled class number (array index).
+
+=item $object->draw1
+
+Draw one sample from the distribution.
+Returns the sampled class number (array index).
+
+Same as the draw method, but faster since it uses only
+one call to the random number generator (profiing shows that
+to be a key slow point).  Note that the
+random draw sequence differs between the two methods so repeatability
+is affected.  It might become the default in version 1, though. 
+
 
 =item $object->draw_n_samples ($n)
 

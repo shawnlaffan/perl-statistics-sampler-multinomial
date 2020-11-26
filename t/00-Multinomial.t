@@ -179,6 +179,39 @@ sub test_draw {
     }
 }
 
+sub test_draw1 {
+    my $probs = [
+        1, 0, 5, 2, 6
+    ];
+    
+    my $prng   = Math::Random::MT::Auto->new (seed => 2345);
+    my $object = Statistics::Sampler::Multinomial->new (
+        prng => $prng,
+        data => $probs,
+    );
+
+    my $expected_draws = {
+        0 => 10,
+        1 =>  0,
+        2 => 36,
+        3 => 14,
+        4 => 40,
+    };
+    my %draws = (1 => 0);
+    for (1..100) {
+        $draws{$object->draw1}++;
+    }
+
+    #diag 'Draws: ' . join ' ', %draws;
+
+    SKIP: {
+        use Config;
+        skip 'prng sequence differs under 32 bit ints', 2
+          if $Config{ivsize} == 4;
+        is_deeply \%draws, $expected_draws, 'got expected draws using draw method';
+    }
+}
+
 sub test_draw_with_mask {
     my $probs = [
         1, 5, 2, 6, 3, 5, 10
