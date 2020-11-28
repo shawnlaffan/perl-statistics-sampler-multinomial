@@ -90,8 +90,8 @@ sub test_draw {
     is_deeply ($index->[-1], $probs, 'bottom level of index');
     is ($#$index, $max_depth_idx, 'index depth');
 
-    #  we should have the same result as the non-indexed draw1 method
-    my $expected_draws = [map {$object_non_indexed->draw1()} (1..5)];
+    #  we should have the same result as the non-indexed draw method
+    my $expected_draws = [map {$object_non_indexed->draw()} (1..5)];
     my @draws = map {$object->draw()} (1..5);
     
     is_deeply \@draws, $expected_draws, 'got expected draws using draw method';
@@ -144,7 +144,7 @@ sub test_update_values {
         1 => 10,
         5 => 0,
     );
-    $expected = [map {$obj_no_index->draw1} (1..10)];
+    $expected = [map {$obj_no_index->draw} (1..10)];
     my $got   = [map {$obj_indexed->draw}  (1..10)];
     is_deeply $got, $expected, 'draws match after updates - indexed and not';
     
