@@ -158,16 +158,15 @@ sub draw1 {
     else {
         #  work from the end
         $rand = (1 - $rand) * $norm;
-        my $cumsum = $data->[-1];
+        my $cumsum;
         my $kk = scalar @$data;  # start one beyond the end
         foreach my $data_kk (reverse @$data) {
             $kk--;
             next if !$data_kk;
+            $cumsum += $data_kk;
 
             return $kk
-              if $rand < $cumsum;
-
-            $cumsum += $data_kk;
+              if $rand <= $cumsum;
         }
     }
 
