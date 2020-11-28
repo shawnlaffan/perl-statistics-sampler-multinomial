@@ -365,7 +365,10 @@ method implemented in L<Statistics::Sampler::Multinomial::AliasMethod>,
 presumably because the calls to the PRNG are inside XS and avoid
 perl subroutine overheads
 (and profiling showed the RNG calls to be the main bottleneck
-for the Alias method).  
+for the Alias method).
+
+There is a subclass that uses a hierarchical index for the draw() method
+in L<Statistics::Sampler::Multinomial::Indexed>.
 
 For more details and background about the various approaches,
 see L<http://www.keithschwarz.com/darts-dice-coins>.
