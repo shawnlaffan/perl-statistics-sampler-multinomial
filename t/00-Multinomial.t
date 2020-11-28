@@ -303,5 +303,18 @@ sub test_update_values {
     is $object->get_sum, $exp_sum, 'got expected sum';
 }
 
+sub test_clone {
+    
+    my $prng1   = Math::Random::MT::Auto->new (seed => 2345);
+    my $object1 = Statistics::Sampler::Multinomial->new (
+        prng => $prng1,
+        data => [1, 2, 3, 4, 5],
+    );
+    my $clone = $object1->clone;
+    
+    is_deeply $object1, $clone, 'cloned object';
+    
+}
+
 
 1;

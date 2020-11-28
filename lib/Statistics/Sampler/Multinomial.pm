@@ -11,6 +11,8 @@ use Ref::Util qw /is_arrayref/;
 use List::Util qw /min sum/;
 use List::MoreUtils qw /first_index/;
 use Scalar::Util qw /blessed looks_like_number/;
+#use parent qw/Clone/;
+use Clone ();
 
 sub new {
     my ($class, %args) = @_;
@@ -42,6 +44,29 @@ sub new {
       // "${class}::DefaultPRNG"->new;
 
     return $self;
+}
+
+sub clone {
+    my $self = shift;
+    my $clone;
+    
+    if ($self->{prng}->can('clone')) {
+        $clone = do {
+            delete local $self->{prng};
+            Clone::clone ($self);
+        };
+        $clone->{prng} = $self->{prng}->clone;
+    }
+    else {
+        $clone = Clone::clone ($self);
+    }
+    return $clone;
+}
+
+sub set_prng {
+    my ($self, $prng) = @_;
+    $self->_validate_prng_object($prng);
+    $self->{prng} = $prng;
 }
 
 sub _validate_prng_object {
@@ -367,6 +392,16 @@ Passing your own PRNG means you have control over the random number
 stream used, and can use it as part of a separate analysis.
 The only requirement of such an object is that it has a binomial()
 method.
+
+=item $object->clone
+
+Create a clone of the sampler object.
+
+=item $object->set_prng($prng)
+
+Set the PRNG object to be used.
+Useful to reset the PRNG after a call
+to the clone method.
 
 =item $object->draw
 
