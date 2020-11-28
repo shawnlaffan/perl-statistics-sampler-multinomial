@@ -93,10 +93,6 @@ sub test_draw {
     #  we should have the same result as the non-indexed draw1 method
     my $expected_draws = [map {$object_non_indexed->draw1()} (1..5)];
     my @draws = map {$object->draw()} (1..5);
-
-    use Data::Dump;
-    diag dd $expected_draws;
-    diag dd \@draws;
     
     is_deeply \@draws, $expected_draws, 'got expected draws using draw method';
 }
@@ -137,6 +133,34 @@ sub test_update_values {
       'got expected data after modifying values';
 
     is $object->get_sum, $exp_sum, 'got expected sum';
+}
+
+#  should be same as non-indexed
+sub test_draw_n_samples_with_mask {
+    my $probs = [
+        1, 5, 2, 6, 3, 5, 10
+    ];
+    
+    my $prng   = Math::Random::MT::Auto->new (seed => 2345);
+    my $object = Statistics::Sampler::Multinomial::Indexed->new (
+        prng => $prng,
+        data => $probs,
+    );
+
+    my $mask = [1,2];  #  mask second and third items
+    my $expected_draws = [20, 0, 0, 122, 64, 111, 183];
+    my $draws = $object->draw_n_samples_with_mask(500, $mask);
+
+    SKIP: {
+        use Config;
+        skip 'prng sequence differs under 32 bit ints', 2
+          if $Config{ivsize} == 4;
+        is_deeply
+          $draws,
+          $expected_draws,
+          'got expected draws using draw_n_samples_with_mask method';
+    }
+    
 }
 
 
