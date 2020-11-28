@@ -104,18 +104,18 @@ sub test_update_values {
     ];
     
     my $prng1  = Math::Random::MT::Auto->new (seed => 2345);
-    my $object = Statistics::Sampler::Multinomial::Indexed->new (
+    my $obj_indexed = Statistics::Sampler::Multinomial::Indexed->new (
         prng => $prng1,
         data => $probs,
     );
     my $prng2  = Math::Random::MT::Auto->new (seed => 2345);
-    my $object2 = Statistics::Sampler::Multinomial->new (
+    my $obj_no_index = Statistics::Sampler::Multinomial->new (
         prng => $prng2,
         data => $probs,
     );
 
     my $update_count
-      = $object->update_values (
+      = $obj_indexed->update_values (
         1 => 10,
         5 => 0,
     );
@@ -130,30 +130,37 @@ sub test_update_values {
     $exp_sum -= ($probs->[1] + $probs->[5]);
     $exp_sum += 10;
 
-    my $data = $object->get_data;
+    my $data = $obj_indexed->get_data;
 
     is_deeply
       $data,
       $expected,
       'got expected data after modifying values';
 
-    is $object->get_sum, $exp_sum, 'got expected sum';
+    is $obj_indexed->get_sum, $exp_sum, 'got expected sum';
+    is $obj_indexed->{index}[0][0], $exp_sum, 'updated index sum correct';
     
-    $object2->update_values (
+    $obj_no_index->update_values (
         1 => 10,
         5 => 0,
     );
-    $expected = [map {$object2->draw1} (1..10)];
-    my $got   = [map {$object->draw1}  (1..10)];
+    $expected = [map {$obj_no_index->draw1} (1..10)];
+    my $got   = [map {$obj_indexed->draw}  (1..10)];
     is_deeply $got, $expected, 'draws match after updates - indexed and not';
     
-    my $idata = $object->{data};
+    my $idata = $obj_indexed->{data};
     my $prng3 = Math::Random::MT::Auto->new (seed => 2345);
     my $object3 = Statistics::Sampler::Multinomial::Indexed->new (
         prng => $prng3,
-        data => $probs,
+        data => [@$idata],
     );
-    is_deeply $object->{index}, $object3->{index}, 'updated index';
+    is_deeply $obj_indexed->{index}, $object3->{index}, 'updated index same as new index with same data';
+
+    #  get $object3 to the same point in the PRNG sequence
+    for (1..10) {$object3->draw};
+    $expected = [map {$obj_indexed->draw} (1..10)];
+    $got      = [map {$object3->draw}     (1..10)];
+    is_deeply $got, $expected, 'same results for updated and "clean" index';
 }
 
 #  should be same as non-indexed
