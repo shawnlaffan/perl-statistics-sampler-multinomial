@@ -120,7 +120,8 @@ sub get_class_count {
 
 #  simplified version of draw_n_samples
 #  as we need a single index result
-sub draw {
+#  superseded by faster method
+sub draw_slow {
     my ($self) = @_;
 
     my $prng = $self->{prng};
@@ -154,7 +155,7 @@ sub draw {
 #  but maintaining a sorted index for binary search
 #  leads to overheads when the list is changed.
 #  Could try a red-black tree or similar...
-sub draw1 {
+sub draw {
     my ($self) = @_;
 
     my $prng = $self->{prng};
@@ -408,16 +409,17 @@ to the clone method.
 Draw one sample from the distribution.
 Returns the sampled class number (array index).
 
-=item $object->draw1
+=item $object->draw_slow
 
 Draw one sample from the distribution.
 Returns the sampled class number (array index).
 
-Same as the draw method, but faster since it uses only
+This was the draw method prior to version 1.00.
+The current method is faster since it uses only
 one call to the random number generator (profiing shows that
 to be a key slow point).  Note that the
 random draw sequence differs between the two methods so repeatability
-is affected.  It might become the default in version 1, though. 
+is affected.
 
 
 =item $object->draw_n_samples ($n)
