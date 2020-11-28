@@ -27,7 +27,7 @@ sub new {
 }
 
 
-#  Build a tree base index of cumulative values.
+#  Build a tree based index of cumulative values.
 #  This will help the single draw methods.
 #  Idea from 
 #  https://www.chiark.greenend.org.uk/~sgtatham/algorithms/cumulative.html
@@ -53,11 +53,6 @@ sub build_index {
             $idx = int ($idx / 2);
         }
     }
-    
-    #use Data::Printer;
-    #p @indexed;
-    #
-    #say '';
     
     $self->{index} = \@indexed;
 
@@ -106,16 +101,40 @@ sub draw {
         $level++;
     }
 
-    #my $sum = 0;
-    #my @cumsums = map {$sum+=$_;$sum} @$data;
-    #say '====';
-    #say "$left, $right";
-    #say "$rand_orig, $cumsums[$left], $cumsums[$right]";
-    #say join ' ', @cumsums;
-    #say $rand <= $data->[$left] ? $left : $right;
-    #say '====';
-    return $rand <= $data->[$left] ? $left : $right;
+    return $rand <= $data->[$left] ? $left : $right;    
+}
+
+
+sub update_values {
+    my ($self, %args) = @_;
     
+    if (!defined $self->{sum}) {
+        $self->_initialise;
+    }
+
+    my $data = $self->{data};
+    my $max_depth = 1 + logb (scalar @$data);
+    my $indexed = $self->{index};
+
+    my $count = 0;
+    foreach my $iter (keys %args) {
+        croak "iter $iter is not numeric"
+          if !looks_like_number $iter;
+        my $diff = $args{$iter} - ($data->[$iter] // 0);
+        $self->{sum} += $diff;
+        $data->[$iter] = $args{$iter};
+        
+        #  update the index
+        my $idx = int ($iter / 2);
+        foreach my $level (reverse (0 .. $max_depth-1)) {
+            $indexed->[$level][$idx] += $diff;
+            $idx = int ($idx / 2);
+        }
+
+        $count ++;
+    }
+
+    return $count;
 }
 
 

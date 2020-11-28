@@ -103,9 +103,14 @@ sub test_update_values {
         1, 5, 2, 6, 3, 5, 10
     ];
     
-    my $prng   = Math::Random::MT::Auto->new (seed => 2345);
+    my $prng1  = Math::Random::MT::Auto->new (seed => 2345);
     my $object = Statistics::Sampler::Multinomial::Indexed->new (
-        prng => $prng,
+        prng => $prng1,
+        data => $probs,
+    );
+    my $prng2  = Math::Random::MT::Auto->new (seed => 2345);
+    my $object2 = Statistics::Sampler::Multinomial->new (
+        prng => $prng2,
         data => $probs,
     );
 
@@ -114,7 +119,7 @@ sub test_update_values {
         1 => 10,
         5 => 0,
     );
-      
+
     is $update_count, 2, 'got correct update count';
 
     my $expected = [@$probs];
@@ -133,6 +138,14 @@ sub test_update_values {
       'got expected data after modifying values';
 
     is $object->get_sum, $exp_sum, 'got expected sum';
+    
+    $object2->update_values (
+        1 => 10,
+        5 => 0,
+    );
+    $expected = [map {$object2->draw1} (1..10)];
+    my $got   = [map {$object->draw1}  (1..10)];
+    is_deeply $got, $expected, 'draws match after updates - indexed and not';
 }
 
 #  should be same as non-indexed
