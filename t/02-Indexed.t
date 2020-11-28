@@ -146,6 +146,14 @@ sub test_update_values {
     $expected = [map {$object2->draw1} (1..10)];
     my $got   = [map {$object->draw1}  (1..10)];
     is_deeply $got, $expected, 'draws match after updates - indexed and not';
+    
+    my $idata = $object->{data};
+    my $prng3 = Math::Random::MT::Auto->new (seed => 2345);
+    my $object3 = Statistics::Sampler::Multinomial::Indexed->new (
+        prng => $prng3,
+        data => $probs,
+    );
+    is_deeply $object->{index}, $object3->{index}, 'updated index';
 }
 
 #  should be same as non-indexed
