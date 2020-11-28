@@ -124,11 +124,13 @@ sub update_values {
         $self->{sum} += $diff;
         $data->[$iter] = $args{$iter};
         
-        #  update the index
-        my $idx = int ($iter / 2);
+        #  update the index - bitshift is faster
+        #my $idx = int ($iter / 2);
+        my $idx = $iter >> 1;
         foreach my $level (reverse (0 .. $max_depth-1)) {
             $indexed->[$level][$idx] += $diff;
-            $idx = int ($idx / 2);
+            #$idx = int ($idx / 2);
+            $idx >>= 1;
         }
 
         $count ++;
