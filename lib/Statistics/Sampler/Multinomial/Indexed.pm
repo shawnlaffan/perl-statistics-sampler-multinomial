@@ -86,8 +86,6 @@ sub draw {
     my $right = 1;
 
     while ($level < $#$indexed) {
-        my ($leftval, $rightval)
-          = @{$indexed->[$level]}[$left, $right];
         if ($rand <= $indexed->[$level][$left]) {
             #  descending left
             $left  *= 2;
@@ -104,7 +102,7 @@ sub draw {
         $level++;
     }
 
-    return $rand <= $data->[$left] ? $left : $right;    
+    return $rand > $data->[$left] ? $right : $left;    
 }
 
 #  should rebuild the index if a new index exceeds next power of two
