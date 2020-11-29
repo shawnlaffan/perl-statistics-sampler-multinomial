@@ -8,7 +8,7 @@ our $VERSION = '1.00';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
-use List::Util qw /min sum/;
+use List::Util 1.29 qw /min sum pairmap/;
 use List::MoreUtils qw /first_index/;
 use Scalar::Util qw /blessed looks_like_number/;
 
@@ -42,15 +42,17 @@ sub build_index {
     my @indexed;
 
     #  bottom is just the data
-    $indexed[$max_depth] = $data;  
-    
-    foreach my $i (0 .. $#$data) {
-        #  could use integer pragma - may be faster?
-        my $value = $data->[$i];
-        my $idx = int ($i / 2);
-        foreach my $level (reverse (0 .. $max_depth-1)) {
-            $indexed[$level][$idx] += $value;
-            $idx = int ($idx / 2);
+    $indexed[$max_depth] = $data;
+
+    for my $level (reverse (0..$max_depth-1)) {
+        my $pop;
+        if (@{$indexed[$level+1]} % 2) {
+            push @{$indexed[$level+1]}, 0;
+            $pop = 1;
+        }
+        @{$indexed[$level]} = pairmap {($a//0)+($b//0)} @{$indexed[$level+1]};
+        if ($pop) {
+            pop @{$indexed[$level+1]};
         }
     }
     
