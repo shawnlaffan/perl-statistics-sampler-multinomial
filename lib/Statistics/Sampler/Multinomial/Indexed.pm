@@ -12,7 +12,7 @@ use List::Util 1.29 qw /min sum pairmap/;
 use List::MoreUtils qw /first_index/;
 use Scalar::Util qw /blessed looks_like_number/;
 
-use POSIX qw /ceil floor log2 logb/;
+use POSIX qw /ceil floor/;
 
 use parent qw /Statistics::Sampler::Multinomial/;
 
@@ -35,7 +35,10 @@ sub build_index {
     my $self = shift;
     my $data = $self->{data};
 
-    my $max_depth = 1 + logb (scalar @$data);
+    #my $max_depth = 1 + logb (scalar @$data);
+    my $max_depth = 1;
+    my $n = scalar @$data;
+    $max_depth++ while $n >>= 1;
 
     # each index entry contains the cumulative sum of its terminals
     # and each level is half the length of the one below 
@@ -106,7 +109,7 @@ sub draw {
     return $rand <= $data->[$left] ? $left : $right;    
 }
 
-
+#  should rebuild the index if a new index exceeds next power of two
 sub update_values {
     my ($self, %args) = @_;
     
@@ -114,8 +117,7 @@ sub update_values {
         $self->_initialise;
     }
 
-    my $data = $self->{data};
-    my $max_depth = 1 + logb (scalar @$data);
+    my $data    = $self->{data};
     my $indexed = $self->{index};
 
     my $count = 0;
@@ -129,7 +131,7 @@ sub update_values {
         #  update the index - bitshift is faster
         #my $idx = int ($iter / 2);
         my $idx = $iter >> 1;
-        foreach my $level (reverse (0 .. $max_depth-1)) {
+        foreach my $level (reverse (0 .. $#$indexed-1)) {
             $indexed->[$level][$idx] += $diff;
             #$idx = int ($idx / 2);
             $idx >>= 1;
