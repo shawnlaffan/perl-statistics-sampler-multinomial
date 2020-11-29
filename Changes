@@ -5,14 +5,13 @@ Revision history for Statistics-Sampler-Multinomial
     The old draw method is now called "draw_slow".
     "draw1" is no longer available as a method
     (please raise an issue if you believe it should be).
-  - Add a subclass that uses a hierarchical index to speed
-    up the draw calls, at the cost of building and updating
-    the index.
-
+  - Add a subclass, Statistics::Sampler::Multinomial::Indexed,
+    that uses a hierarchical index to speed up the draw
+    calls, at the cost of building and updating the index.
 
 0.87 20201127
   - Add a draw1 method as a faster means of drawing a single class.
-    It has not relaced the draw method (yet) because the
+    It has not replaced the draw method (yet) because the
     random draw sequence differs between the two so repeatability
     is affected.  It might become the default in version 1, though. 
 

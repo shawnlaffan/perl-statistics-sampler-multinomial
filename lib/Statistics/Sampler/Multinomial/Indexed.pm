@@ -240,6 +240,10 @@ The same applies for floating point array indices.
 
 Due to the index, this will run at O(log n).
 
+If the updates would increase the size of the data
+array beyond the next power of two 
+then the index is completely rebuilt.  
+
 =item $object->build_index
 
 Build the index.  This is called automatically in new(),
