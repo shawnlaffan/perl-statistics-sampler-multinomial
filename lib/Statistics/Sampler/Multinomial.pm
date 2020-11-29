@@ -25,7 +25,7 @@ sub new {
     croak 'data argument is an empty array'
       if !scalar @$data;
 
-    my $first_neg_idx = first_index {$_ < 0} @$data;
+    my $first_neg_idx = first_index {($_ // 0) < 0} @$data;
     croak "negative values passed in data array ($data->[$first_neg_idx] at index $first_neg_idx)\n"
       if $first_neg_idx >= 0;
     
