@@ -8,11 +8,11 @@ our $VERSION = '1.00';
 
 use Carp;
 use Ref::Util qw /is_arrayref/;
-use List::Util 1.29 qw /min sum pairmap/;
-use List::MoreUtils qw /first_index/;
+use List::Util 1.29 qw /min max sum pairmap/;
+#use List::MoreUtils qw /first_index/;
 use Scalar::Util qw /blessed looks_like_number/;
 
-use POSIX qw /ceil floor/;
+#use POSIX qw /ceil floor/;
 
 use parent qw /Statistics::Sampler::Multinomial/;
 
@@ -36,9 +36,7 @@ sub build_index {
     my $data = $self->{data};
 
     #my $max_depth = 1 + logb (scalar @$data);
-    my $max_depth = 1;
-    my $n = scalar @$data;
-    $max_depth++ while $n >>= 1;
+    my $max_depth = 1 + int (log (scalar @$data) / log (2));
 
     # each index entry contains the cumulative sum of its terminals
     # and each level is half the length of the one below 
@@ -120,10 +118,26 @@ sub update_values {
     my $data    = $self->{data};
     my $indexed = $self->{index};
 
+    my $max_update_iter = max (keys %args);
+
+    if ($max_update_iter > $#$data) {
+        #  if someone passes in an iter that needs extra index levels
+        #  then we rebuild the whole index
+        my $max_depth     = int (log (scalar @$data) / log (2));
+        my $new_max_depth = int (log ($max_update_iter+1) / log (2));
+        if ($new_max_depth > $max_depth) {
+            $self->SUPER::update_values (%args);
+            $self->{index} = undef;
+            $self->build_index;
+        }
+    }
+
+    
     my $count = 0;
     foreach my $iter (keys %args) {
         croak "iter $iter is not numeric"
           if !looks_like_number $iter;
+        
         my $diff = $args{$iter} - ($data->[$iter] // 0);
         $self->{sum} += $diff;
         $data->[$iter] = $args{$iter};

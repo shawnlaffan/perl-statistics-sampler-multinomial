@@ -96,9 +96,37 @@ sub test_draw {
     my $expected_draws = [map {$object_non_indexed->draw()} (1..5)];
     my @draws = map {$object->draw()} (1..5);
     
-    is_deeply \@draws, $expected_draws, 'got expected draws using draw method';
+    is_deeply \@draws, $expected_draws, 'got expected draws using draw method';    
 }
 
+
+sub test_update_large_index {
+    my @probs1 = (
+        1, 5, 2, 6, 3, 5, 10
+    );
+    my @probs2 = (
+        1, 5, 2, 6, 3, 5, 10, undef, undef, undef, undef, 3
+    );
+    #update 11 => 3
+    
+    my $prng1  = Math::Random::MT::Auto->new (seed => 2345);
+    my $obj_indexed1 = Statistics::Sampler::Multinomial::Indexed->new (
+        prng => $prng1,
+        data => \@probs1,
+    );
+    my $prng2  = Math::Random::MT::Auto->new (seed => 2345);
+    my $obj_indexed2 = Statistics::Sampler::Multinomial::Indexed->new (
+        prng => $prng2,
+        data => \@probs2,
+    );
+    
+    $obj_indexed1->update_values (11 => 3);
+    is_deeply
+        $obj_indexed1->{index},
+        $obj_indexed2->{index},
+        'same index structures';
+    
+}
 
 sub test_update_values {
     my $probs = [
