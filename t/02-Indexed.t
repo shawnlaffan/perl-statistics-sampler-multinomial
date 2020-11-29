@@ -84,9 +84,9 @@ sub test_draw {
 
     my $sum = sum @$probs;
     #my $max_depth_idx = 1 + logb scalar @$probs;
-    my $max_depth = 1;
+    my $max_depth_idx = 1;
     my $n = scalar @$probs;
-    $max_depth++ while $n >>= 1;
+    $max_depth_idx++ while $n >>= 1;
     my $index = $object->{index};
     is_deeply ($index->[0], [$sum], 'top level of index');
     is_deeply ($index->[-1], $probs, 'bottom level of index');
