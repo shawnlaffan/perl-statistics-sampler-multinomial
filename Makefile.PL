@@ -13,6 +13,7 @@ WriteMakefile(
     PREREQ_PM => {
         'Carp'         => 0,
         'parent'       => 0,
+        'Clone'        => 0,
         'Ref::Util'    => 0,
         'List::Util'   => 1.29,
         'Scalar::Util' => 0,

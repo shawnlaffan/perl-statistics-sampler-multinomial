@@ -1,5 +1,8 @@
 Revision history for Statistics-Sampler-Multinomial
 
+1.01 20201130
+  - Add missing dependencies to Makefile.PL
+
 1.00 20201128
   - The draw method now uses the faster approach.
     The old draw method is now called "draw_slow".
