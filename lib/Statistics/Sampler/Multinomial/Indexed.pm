@@ -26,6 +26,17 @@ sub new {
     return $self;
 }
 
+sub _clone_inner {
+    my $self = shift;
+    #  parent class handles most details
+    my $clone = $self->SUPER::_clone_inner;
+    
+    #  generate a dup of the index array-of-arrays
+    $clone->{index} = [map {[@$_]} @{$self->{index}}];
+
+    return $clone;
+}
+
 
 #  Build a tree based index of cumulative values.
 #  This will help the single draw methods.
